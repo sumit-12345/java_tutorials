@@ -1,0 +1,147 @@
+What are the problems in writing the code for mapping data between relational database into objects within an java application?
+1. in a typical application we have lot of tables being used, so we endup in writing lot of code in coverting the data from all these tables into objects
+2. its not that we need to map data from tables to objects, even the business logic computed data also should be persisted aspart of tables, wherein we need to write code in mapping objects into relational tables
+3. not always a record is equal to an object, while working with join queries, we need to endup in writing complex logic in rolling up the records of data into objects based on relationship
+4. each time there is a change in database tables, we need to modify the code in mapping the data which is very difficult to maintain
+
+from the above we can understand most of the code we write aspart of the application would be mapping the data from RDBMS to objects and viceversa which is an fuss logic or no functional value and increases the time of development and cost of development as well.
+	
+	
+Reading the data from RDBMS interms of objects and viceversa is not something very specific to one project, its a quite common requirement while building the application in java language to read the data interms of objects.
+	
+More over it is not just java, rather any project that is build based on object oriented programming languages always wants to read/hold the data interms of objects only, by which we can see it as universal requirement.
+	
+
+There are group of experts who has strong knowledge/experience in building solutions using RDBMS and Object oriented programming languages/priciples  has identified it as an universal requirement, and provided principles, guidelines and best practices that can be used for mapping the data from Relational database into object model and viceversa, which are called "ORM Technology"
+
+ORM Technology = ORM Stands for object relational mapping technology, that has provided priniciples, guideliness and best practices that should be used in building software applications, so that they can easily map the data between Relational database to objects
+
+Based on these ORM Technology principles the developers has to build their software applications in reading/storing the data into RDBMS interms of objects. But implementing the software application based on these principles seems to be very complex and since it is an universal requirement, it is the responsibility of the programming languages to provide standard apis helping developers in quickly building software applications using their languages to achieve ORM Technology
+
+So from the above we can understand all the object oriented programming languages like
+1. java
+2. .net
+3. ruby
+4. scala
+etc
+should provider their respective apis within their languages in support of ORM Technology.
+	
+Java also has to provide an api to support ORM Technology, but java initially has not provided an API in support of ORM Technology.
+	
+ORM Technology = principles/guidelines are provided
+
+In Java platform = ejb technology
+Enterprise Java Beans
+3 types of ejbs are there
+1. session beans
+2. entity beans = used for storing/accessing the data from RDBMS database interms of objects (partially)
+3. message-driven beans
+
+EJB technology in support of RDBMS (interms of objects, partially) = ORM Technology 
+new api (ORM Technology) = 
+	
+	
+EJB as a best = un-fortunately it is very bad (down-sides)		
+slowly people in java platform = we dont want ejb , please support ORM technology
+
+sun microsystems  = people using java programming
+ejb                 orm
+
+          third-party vendors
+					hibernate framework = jboss 
+          (bunch of classes)
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

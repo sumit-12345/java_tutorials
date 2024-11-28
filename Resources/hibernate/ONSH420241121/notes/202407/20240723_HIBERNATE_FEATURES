@@ -1,0 +1,208 @@
+What are the advantages of using Hibernate Framework or Jpa api over jdbc api?
+
+#1.
+jdbc: jdbc is an api, api stands for application programming interface and those are always partial. Apis will not provide boiler-plate logic, so we need to write lot of boiler-plate logic in performing persistence operations using jdbc api
+
+hibernate: hibernate is an Framework, Framework always provides bunch of concrete classes with pre-identified (boiler-plate) logic aspart of them. so while working with hibernate framework we dont have to write redundant boiler-plate logic inorder to perform persistence operations.
+	
+#2.
+jdbc: while working with jdbc programmer has to write code for managing the resources. No matter how effectively we wrote the resource management logic, always there is a chance of running into resource leakage issue while working with jdbc api. along with this the logic for managing the resources is quite complex	because
+	1. when closing the resources we need to follow specific order (PreparedStatement/Statement, Connection)
+	2. each resource closing should be enclosed in its own try/catch block
+looks like we endup in writing lot of lines of code in managing the resources	
+
+hibernate: The only resource that we need to manage at the end of the operation is closing the Session object and doesnt requires any complex logic in managing it.
+In addition we need to close the SessionFactory only once at the end of the application
+So from the above we can understand managing the resources while working with Hibernate is quite easy when compared with jdbc api
+
+#3.
+jdbc: all the exceptions in jdbc api are designed to be checked exceptions, so we endup in writing un-necessary try/catch blocks while working with jdbc api, that makes the code clutter and difficult to understand and hard to read and maintain.
+	
+There are 2 types of exceptions are there in java
+1. checked exceptions
+2. un-checked exceptions
+
+any exception will be encounted only at runtime, indicating the failure of execution of the program. If there is no failure, there is no reception of exception
+
+old programming languages like c, c++ etc doesnt have concept of exceptions, only modern programming languages like java has introduced the concept of exceptions. There are #2 main moto (goals) of exceptions are there:
+	1. rather than abnormally terminating the program incase of running into failure while executing instructions, the programming language runtime gathers the information about the failure along with line of code that caused the failure, wraps into exception object and report that to the application program, so that by looking at this information programmer can easily debug the error/failure.
+		
+	2. does all kinds of failures that arises during the execution should lead to termination of the program?
+		No, few failures/errors can be recoverable, which means we can handle those failures and can perform alternate path of execution (code) to recover out of the failure and continue executing the program normally
+		only few failures only leads to terminate		
+		so to handle and recover from the failures while execution, exception handling has been introduced.
+			
+		To help the language runtime distinghish between regular path and recovery path, the java language has introduced programming idioms or constructs called try/catch
+			
+		for different types of failures (exceptions)	, there are different alternate or recovery paths to be applied so we can have multiple catch blocks for a given try block
+		
+Checked Exceptions   = that can be recoverable, we can write try/catch block, to execute alternate path of code in recovering out of the failure
+UnChecked Exceptions = these are non-recoverable, and might leads to the termination of the program upon encoutering them.
+	
+To distinguish between Checked and UnChecked java has provided 2 base classes deriving from Throwable interface
+	1. Exception        (Checked)
+	2. RuntimeException (UnChecked)
+	
+Can I write try/catch block and handle UnChecked Exceptions?
+We can write try/catch block to handle unchecked exceptions, but it purely depends on the type of the failure that is being arised/encoutered based on which, the catch might be executed or the program might be terminated.
+For eg.. 	
+1. OutofMemoryException
+2. StackOverflowException
+are the ones upon arising within the runtime of the application, there is no way the catch will be executed rather jvm will forcibly terminate the application
+
+But whereas few unchecked exceptions like
+1. NullPointerException
+2. ArrayIndexOutOfBoundsExceptions 
+etc
+are the ones that can be handled by writing an catch block and can have alternate path of execution
+
+which means UnChecked = may be or may not be recoverable, there is no guarantee
+Checked = guaranteed, always recoverable without termination
+
+
+since checked exceptions are always designed or guaranteed to be recoverable, the java compiler makes an additional check during the compilation time to ensure the programmer has properly written try/catch block sourrounding the corresponding code to recover out of the failure.
+	
+but this check will never be done by the compiler incase of unchecked exceptions, as those are not guarateed to be recoverable.
+	
+few times we dont wanted our code to be recovered for an known checked-exception as well, and wanted to terminate the program incase of encourtering it. but java compiler always enforce us to write try/catch block, to let the java compiler ignore writing the try/catch, the throws has been provided. by declaring the method to be throws of an exceptionType we are telling java compiler to ignore try/catch block for that exception
+
+hibernate/jpa: all the exceptions in hibernate/jpa api are designed to be un-checked, which means we never need to write our code sourrounded by try/catch block unless needed. This makes the code easily readable, understable and maintainable
+
+#4
+jdbc api: jdbc api supports only local transactions, it doesnt support global transactions. Inorder to work with global transactions the jee has provided jta api. So always working with jdbc api, we need to write #2 different types of logics based on the type of transaction we are using aspart of our application
+local transactions = jdbc api
+global transactions = jta api
+
+switching between one transaction management technic to another one seems to be very complex and difficult job and takes huge time in rewriting the components of the application
+
+hibernate api: hibernate has provided a single unified api which is "hibernate transaction management api classes", using which we can sophisticatedly work with both local and global transactions without the need to changing the code even while switching.
+	
+#5. 
+jdbc api: while working with jdbc api, always our application logic is specific to the database vendor we are using, inorder to switch from one database to another we need to rewrite the native sql queries along with data extraction logic that we built around it in jdbc 
+
+hibernate: the persistence logic we write using hibernate is portable across the database vendors/platforms, because we dont write  native sql queries, rather hibernate has provided their own query language called "HQL/JPQL", and these queries are translated into native sql queries during execution by the dialect
+
+#6.
+jdbc api: while working with jdbc api, we often refer to the tablenames and column names, in writing the queries and while extracting the data aswell, this makes the application logic exposed to the underlying database schema model, so that any change within the underlying schema would effect the persistence logic of our application.
+	
+hibernate: while working with hibernate, we write hql queries which is an object-query language, in which we refer entity classname and attribute names in querying the data rather than tables and columns of the database schema.
+	
+These classnames and attribute names are mapped to tables and columns through mapping info we provided. So that always the hibernate application logic is decoupled from database schema and a change in schema doesnt effect the application code, only we need to modify the mapping file, that makes the code easily maintainable while working with hibernate
+
+#7.
+jdbc:	jdbc api doesnt support caching, it has not been designed to meet enterprise persistence requirements of an application.
+	
+hibernate: hibernate right from the ground has been built, keeping in view of enterprise persistence requirements of an system, so it has rich support of caching in hibernate framework.
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	

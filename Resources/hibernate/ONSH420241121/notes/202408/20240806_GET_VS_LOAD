@@ -1,0 +1,589 @@
+get() & load() methods in hibernate framework
+----------------------------------------------
+
+get() and load() both these methods are used for querying one-single object of data against the primary key column from the database table.
+	
+In-short: These 2 methods are called single object query methods.
+	
+	
+syntax/signature:-
+These @2 methods are part of Session class and the signature of these methods are 
+	1. session.get(ClassType, Object id);
+  2. session.load(ClassType, Object id);
+
+Both these methods are meant for performing the same job of fetching an object of data from the database table against primary key column, then why do we have #2 methods provided by the Hibernate Framework aspart of the Session class?
+	
+Let us explore what is the different between get() and load():
+#1 get() 
+get() method supports eager loading, which means upon calling the get() method of the Session class, it immediately goes to the database table, queries the data and returns the data interms of entity object.
+	
+For eg..
+	RechargePlan rechargePlan = session.get(RechargePlan.class, 10);
+
+1. upon calling session.get(RechargePlan.class, 10); the get(..) method within the Session class grabs the Connection to query the data from the table
+2. To query the data from the table for the given entity class, we need tablename and primary key column name, so the Session class (get()) method immediately gathers the mapping information for that given entity class
+3. goes to dialect passes this mapping info and ask to generate the sql query to fetch the data against primary key
+4. creates the preparedStatement and substitue the primary key column value with id supplied
+5. executes the query and gets the ResultSet
+6. Then passes the ResultSet to GenericMapper in convert the data into object
+and returns to us
+
+From the above we can understand, get(..) method upon calling, immediately hits the database, queries the data and returns it interms of object. hence it is called "eager loading"
+
+#2.
+whereas when it comes to
+load(...):
+
+load(..) method supports lazy loading which means upon calling the load() method it will not immediately hits the database in querying the data, rather it returns an proxy object. only when we tried accessing the data using the proxy object, then only the data will be fetched from the underlying database.
+	
+	RechargePlan rechargePlan = session.load(RechargePlan.class, 10);
+
+1. upon calling the session.load(RechargePlan.class, 10); , the load will not queries the data from database, rather it returns an proxy object to me.
+	
+2. now when we tried accessing the data using the proxy object rechargePlan for eg..
+	rechargePlan.getPlanName();
+then it goes to the underlying database, queries the data and returns the data interms of object. as load(..) will not immediately access the data from database, rather only when we tried accessing the data it fetches the data from db it is called "lazy loading"
+	
+
+class Customer implements Serializable {
+	int customerNo;
+	String fullname;
+	int age;
+	String gender;
+	String mobileNo;
+	String emailAddress;
+	
+	// accessors
+}
+	
+Customer.hbm.xml
+-----------------
+<hibernate-mapping package="com.gvl.entities">
+	<class name="Customer" table="customer">
+		<id name="customerNo" column="customer_no"/>
+		<property name="fullname"/>
+		<property name="age"/>
+		<property name="gender"/>
+		<property name="mobileNo" column="mobile_no"/>
+		<property name="emailAddress" column="email_address"/>
+	</class>
+</hibernate-mapping>
+
+hibernate.cfg.xml
+-----------------
+<hibernate-configuration>
+	<session-factory>
+		<property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+		....
+	</session-factory>
+</hibernate-configuration>
+
+Test.java
+----------
+Configuration configuration = new Configuration().configure();
+SessionFactory sessionFactory = configuration.buildSessionFactory();
+Session session = sessionFactory.openSession();
+
+Customer customer = session.get(Customer.class, 1); #eager loading, immediately queries and returns the object from db
+
+Customer customer1 = session.load(Customer.class, 1); #lazy loading, and returns proxy object to us
+there is no sql query printed on the console when we use show_sql=true. 
+	
+upon calling customer1.getFullname() or any methods to access the data, then the query will be executed on the database table and data will be fetched and populated into the proxy object
+
+What is Proxy?
+Proxy is an design pattern.
+Proxy acts as an suroggate or substitute of the original object, which means it exactly looks like an original. The client always talks to the proxy assuming it as original. Upon invoking a method on proxy object -> The proxy inturn goes to the original in performing the operation and returns the response to the client
+client -> proxy -> original
+	
+Why do we need proxy?
+We wanted to add additional functionality into one of the existing class within our application. Can we add this additional functionality directly into the existing class of the application?
+		
+Yes we can add the additional functionality into existing class, if it is applicable always. but if the additional functionality that we wanted to add is not common across or not applicable always, dont add the additional functionality into the existing class.
+	
+Rather create a proxy class, the proxy talks to the original class and applies additional functionality ontop of it before serving the response to the client, so that the additional functionality will be applied to the clients who are talking the original class through proxy only. The rest of the components or the clients will not be affected.
+-------------------------------------------------------------------------------------------------------------------------
+	
+class Customer implements Serializable {
+	int customerNo;
+	String fullname;
+	int age;
+	String gender;
+	String mobileNo;
+	String emailAddress;
+	
+	// accessors
+}
+
+Customer customer = session.get(Customer.class, 10); 
+get(..) method itself goes to the database, queries the data and populates into entity class object and returns the object.
+	
+
+Customer customer = session.load(Customer.class, 10);  = supports lazy loading
+lazy loading = on-demand when user tries to access the data, then only data will be fetched.
+	
+The load method doesnt goes to database inorder to support lazy loading, it returns proxy ontop of the original class. Now the proxy has the appropriate logic in fetching the data from database when we call any of the methods on the proxy in accessing the data.
+	
+--------------------------------------------------------------------------------------------------------------------------
+	
+	
+	
+	
+proxy acts as an surrogate or substitute of the original class. it looks same as original class. The client always interacts with the proxy assuming it as original, where the proxy inturn goes to the original class in fullfilling the functionality.
+	
+why do we need to use proxy?
+If we want to add additional functionality ontop of an existing class, wherein the additional functionality that we wanted to add is not common across all the clients/components of the application. In such case rather than adding additional functionality within the existing class, we can add that through the help of proxy
+
+so that whoever need the additional functionality can be served through proxy and others can be returned with original object itself.
+	
+usually clients will not create the object of original/proxy class, they always use Factory for instantiating or getting the object of the existing class. The Factory has logic for abstracting and creating the object of either original or proxy and return to the client.
+	
+So that client without knowing the details of the object it received, he always holds in the interface/original class reference variable and talks to object.
+--------------------------------------------------------------------------------------------------------------------------
+	
+class Customer implements Serializable {
+	int customerNo;
+	String fullname;
+	int age;
+	String gender;
+	String mobileNo;
+	String emailAddress;
+	
+	// accessors
+}
+
+Customer.hbm.xml
+-----------------
+<hibernate-mapping package="com.gvl.entities">
+	<class name="Customer" table="customer">
+		<id name="customerNo" column="customer_no"/>
+		<property name="fullname"/>
+		<property name="age"/>
+		<property name="gender"/>
+		<property name="mobileNo" column="mobile_no"/>
+		<property name="emailAddress" column="email_address"/>
+	</class>
+</hibernate-mapping>
+
+
+Customer customer = session.get(Customer.class, 10);
+The get(...) method directly goes to the database table, queries the data and returns it interms of entity class object as it supports eager loading.
+	
+	
+Customer customer = session.load(Customer.class, 10);
+customer.getCustomerNo(); 
+customer.getFullname();
+customer.getAge();
+
+
+The load(...) method supports lazy loading, which means only on-demand when we tried accessing the data by using the entity object, then only the data will be fetched from the database
+
+The load(..), upon invoking will returns an proxy object, instead of accessing the data from database. When we invoke the load(..) method by passing the entity ClassType, it creates/generates an runtime proxy class within the jvm memory using JDKProxy libraries and returns the object of the proxy class it has created.
+	
+jdk proxy (sdk) = using which we can create runtime proxy classes within the jvm memory during the execution of our program.
+
+The proxy that is being generated by the load(..)	method at runtime within the jvm memory might look as below.
+	
+class CustomerProxy extends Customer {
+	private Customer customer;
+	private Class entityClass;
+	private Object id;
+	private Session session;
+	
+	
+	public int getCustomerNo() {
+		return id;
+	}
+	public void setCustomerNo(int customerNo) {
+		this.id = customerNo;
+	}
+	
+	public String getFullname() {
+		loadData();
+		return customer.getFullname();		
+	}
+	public void setFullname(String fullname) {
+		loadData();
+		this.customer.setFullname(fullname);
+	}
+	
+	public int getAge() {
+		loadData();
+		return customer.getAge();
+	}
+	public void setAge(int age) {
+		loadData();
+		this.customer.setAge(age);
+	}
+	
+	public String getGender() {
+		loadData();
+		return customer.getGender();
+	}
+	public void setGender(String gender) {
+		loadData();
+		this.customer.setGender(gender);
+	}
+	
+	public void loadData() {
+		if(customer == null) {
+			customer = session.get(entityClass, id);
+		}
+	}
+}	
+
+#1
+From the above we can understand:
+upon calling the load(..) method it creates an runtime proxy class within the jvm memory and instantiates the object of it by wrapping
+	1. id (primary key value) = we supplied to the load
+	2. entityClassType = the entity classType we are trying to fetch the data for
+	3. session object = so that it use the session for fetching the data from database
+and returns the object of the proxy class to us.
+	
+#2	
+when we invoke getter/setter on id property/attribute, it doesnt hit the database, as already proxy is being created with the id
+
+#3
+when we invoke any of the non-primary key property/attribute getter/setter methods on the proxy, it goes to the underlying database and queries the record of data based on id using the Session object, stores that inside original reference it holds and returns the appropriate data.
+--------------------------------------------------------------------------------------------------------------------------
+what is the difference between get() and load()?
+	
+#1. 
+get(entityClass, id) = supports eager loading, upon calling the get(..)	method it immediately goes to the underlying database queries the data against the primary key value we supplied and returns the data interms of entity class object to us.
+
+load(entityClass, id) = by default it supports lazy loading, when we call load(..) method it doesnt goes to the database and queries the data, rather it creates an runtime proxy class, instantiates the object of it by wrapping entityClass, id and session object and returns the reference of it. The data will be only fetched upon accessing the data by invoking any of the accessor methods on the proxy.
+	
+In-Short: load(..) by default never queries the data from database, rather returns proxy object only.
+	
+#2. 
+session.get(Customer.class, 20); 
+Incase of get(..) when we invoke by passing the entityClass and id, for the id (pk) value we requested if the corresponding record of data doesnt exists within the table, it returns an null value to us
+
+session.load(Customer.class, 20);
+The load(..) method as it doesnt goes to the database in querying the data immediately, it never knows whether the primary key value we supplied, the corresponding record exists in the database or not. So it always returns the proxy object only to us irrespective of it.
+	
+when we try accessing the data by invoking any of the non-primary key attribute accessor methods, then it goes and tries to fetch the record of data from database, incase if the corresponding record doesnt exists in the database, then it throws an ObjectNotFoundException
+
+Customer customer = session.load(Customer.class, 10);
+customer.getFullname(); = upon trying to access the data, if the corresponding record doesnt exists, it throws ObjectNotFoundException. Why ObjectNotFoundException, why not it returns an null value indicating the record doesnt exists?
+	
+To differentiate between whether record doesnt exist or the corresponding column we are trying access doesnt have the value it throws ObjectNotFoundException
+
+#3.
+get(..)	= 
+upon invoking the get(...)	if the corresponding record doesnt exist it returns null object, so always before using the data from the entity class object we can safely check for the existence of the object by doing an null conditional check as below.
+	
+Customer customer = session.get(Customer.class, 10);
+if(customer != null) {
+	// using the data
+}
+
+
+load(...)	
+when it comes to the load method, irrespective of object/record exists or not, it always returns an empty proxy object to us. So having an conditional check against the null as below, doesnt help us in determining the presence of the data and makes our code unsafe. 
+Because if the record doesnt exists, it proxy throws an ObjectNotFoundException (Runtime exception)	and terminates the application.
+	
+	
+Customer customer = session.load(Customer.class, 10);
+if(customer != null) {
+	// if we access the data, we run into RuntimeException (ObjectNotFoundException), the program gets terminated.
+}	
+
+instead we should write the code wrapping around try/catch block to ensure the safety of application being terminated.
+
+try {
+	Customer customer = session.load(Customer.class, 10);
+	// access the data
+}catch(ObjectNotFoundException o) {
+}
+
+#4.
+get(entityClass, id)
+get(..) = get always works as eager loading, so immediately goes to the database fetches the data and populates into the entity class object
+so
+Customer customer = session.get(Customer.class, 10); // data is fetched, populated into entity class object and returned.
+session.close();
+customer.getFullname(); // as the data is already fetched we can access it from the object itself.
+
+while accessing the data using entity class object, the session need not be active/open, because already the data has been populated when we call get(..) method itself.
+	
+load(entityClass, id)
+load(..) = it wraps entityClass, id and Session object by creating an runtime proxy class and returns the proxy object to us.
+	
+Customer proxy = session.load(Customer.class, 10);
+session.close();
+proxy.getFullname(); // it throws an exception indicating no session object found
+
+as the proxy uses the Session object in querying and accessing the data from the database on-demand, if the session is not active, it throws an exception
+
+#5. 
+get(..) = always supports eager loading only
+load(..) = load() by default works as lazy loading, if we want we can turn-off the lazy loading even incase of using load(..) by writing an attribute at the class level lazy=false in the mapping file of the entity class
+	                                                     @Entity
+<class name="Customer" table="customer" lazy="false">  @Lazy
+</class>                                               class Customer {}
+
+#6.
+get(..) = always supports eager loading only
+load(..) = by default works as lazy loading, but to support lazy loading, the corresponding entity class should not be final.
+	
+final class Customer implements Serializable {}
+
+In case if the corresponding entity class for which we are requesting the data is final, the load(..) method doesnt throw exception, rather it turns off lazy loading and returns the entity class object directly by populating the data just like get(..)
+	
+even though we marked the class as final, we can still support load(..) loading the class lazily by proxying the interface.
+	
+interface ICustomer {
+	int getCustomerNo();
+	void setCustomerNo(int customerNo);
+	
+	String getFullname();
+	void setFullname(String fullname);
+	
+	int getAge();
+	void setAge(int age);
+	// all accessor methods
+}
+
+
+class Customer implements ICustomer {
+	int customerNo;
+	String fullname;
+	int age;
+	//override the accessor methods and write corresponding logic for getting and setting the data asusual
+}
+
+class CustomerProxy implements ICustomer {
+	
+}
+
+Customer.hbm.xml
+-----------------
+<hibernate-mapping package="com.gvl.entities">
+	<class name="Customer" table="customer" proxy="ICustomer">
+	</class>
+</hibernate-mapping>
+
+ICustomer customer = session.load(Customer.class, 10);
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

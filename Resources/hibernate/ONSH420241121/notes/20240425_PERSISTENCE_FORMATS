@@ -1,0 +1,73 @@
+How to persist the data permanently on the storage device of the computer?
+The operating systems provides File System technics in storing and managing the data on the permanent storage devices of the computer interms of Files and Folders.
+	
+How many formats in which we can store the data are there?
+There are 2 formats of storing the data are there
+1. Human understandable format
+2. Programmable format
+
+1. Human understandable format
+The information or data is represented and stored can be understood by the humans and can use it. There are lot of human understandable formats are there like
+1.1 pdf
+1.2 word
+1.3 excel
+1.4 powerpoint
+etc
+
+2. Programmable format
+If we are storing the data on the Files of the computing as english like language representation, the software programs cannot parse or interpret the data out of it to perform the operations. The programs doesnt have artificial intelligence like humans to parse and interpret the information
+
+So we need to store the data some how someway in such a way that programs should be able to understand, parse and intepret the data so that they can perform operations using that data. That is where programmable formats are introduced.
+	
+There are several programmable formats are there in representing and storing the data on the computer storage as below
+1. Fixed width Field size format
+2. CSV Format
+3. xml
+4. Serialization
+
+1. Fixed width Field size format
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

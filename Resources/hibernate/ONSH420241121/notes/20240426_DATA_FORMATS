@@ -1,0 +1,190 @@
+How many formats in which we can store the data on a File of Filesystem of the computer?
+There are 2 formats in which we can store the data on a File
+1. human readable format
+2. programmable format
+
+2. programmable format
+We wanted to read the data and process the data aspart of the software programs. if we are storing the data on a File using natural language text of characters the programs cannot read the data, interpret/parse and perform the operations on the data.
+	
+For eg.. if we are storing the sales information of a store in a text file using natural language as below
+
+sales.txt
+1. customer adam has purchased 3 products on 25-04-2024 and the bill amount is 250
+2. customer patrik has purchased 5 products on 25-04-2024, and a bill has been computed for an amount of 500 and a discount of 5% has been offered, and so the final amount is: 475 has been paid
+
+We cannot have software programs built around reading the above data, interpret and perform operations on the data, since programs doesnt have artificial intelligence or NLP capabilities in understanding the natural language data and hence to let the programs read, interpret and use the data that is being stored on the Files, the programmable formats has been introduced.
+	
+How does the data is being stored and represented aspart of the programmable format?
+Not everything that we have written will acts as an input for performing the operations, there are designated fields of data that really acts as an input for performing the operation. In the above example we have
+1. customer name
+2. sale date
+3. quantity
+4. bill amount
+etc
+
+are the fields of data that only acts as an input for the program, rest of all is of no use. So the idea behind the programmable format is identify such fields of data only on whom we perform the operation and capture/store those fields only within the Files so that we can use that data aspart of the prgrams.
+	
+There are various different data representation formats are available in writing the data so that it can be procesed by the software programs let us explore:
+
+1. Fixed width field size format
+---------------------------------
+In Fixed width field size format each field of data will be defined with a fixed width, no matter how big the data is we always capture the defined size of the field data only and store it. 
+	
+For eg.. we define field sizes for the above information as below
+FieldName   = Size
+customerName= 15 
+sale date   = 10
+quantity    = 3
+billAmount  = 7
+	
+	
+now based on this we need to capture the data in the File
+sales.txt
+Adam           25-04-20243  250    
+Patrik         26-04-20245  475
+James          26-04-202410 500
+Steve          26-04-20242  20      
+		
+	
+class DaySalesCalculator {
+	public static void main(String[] args) {
+		String line = null;
+		double totalSales = 0;
+		
+		BufferedReader reader = new BufferedReader(new FileReader(new File("sales.txt")));
+		
+		while((line = reader.readLine()) != null) {
+			String billAmount = line.substring(29, 7);
+			double amount = Double.parseDouble(billAmount.trim());
+			totalSales+=amount;	
+		}
+		
+		System.out.println("total sales: " + totalSales);
+	}
+}	
+	
+advantages:-
+	1. the data we have represented in the Fixed width field size format is understandable by both humans and programs as well.
+	2. supports both sequential and random access of the data from the file
+	3. performing file operations like inserting, deleting and modifying the fields of data is very easy
+dis-advantages:-
+  1. as the fields are defined with fixed width, we endup in storing spaces to fill up the field sizes which will leads to huge amount of wastage of memory
+	
+	2. We need historical data to derive the size of the fields to be stored in the File. without prior/historical data deriving the field sizes is a complex job. either we end up taking the field sizes as too short, that leads to truncation or loss of data or field sizes to be too length, which leads to wastage of memory
+	
+	3. business is not an static entity, it is dynamic and changes over the period of time. The assumptions based on which we derived the field sizes may not be fixed/final and may need to be changed in future.
+	In such case if we need to change the fields sizes of the data being captured the efforts are too high because
+	1. we need to rewrite the whole data we have stored earlier with the new field sizes we defined
+	2. along with that we need to modify the logic within our programs to process the data based on new field sizes
+	
+always business data is huge in nature and it looks like fixed-width field size format is not an viable option for storing the data as we end up in wasting huge amount of storage memory.
+	
+2. csv format (comma-separated value)	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

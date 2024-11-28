@@ -1,0 +1,138 @@
+Hibernate Framework
+Hibernate is an persistency technology framework
+
+What is persistency means?
+Permanently storing/writing the data on to an underlying storage device is called "Persistency".
+	
+Why do we need persistency, what is the purpose of it?
+
+grocery store (new store):
+10 products
+
+notebook
+25
+10
+35
+40
+79
+67
+---
+245 
+---
+accuracy: less
+
+>500 = 5% discount
+
+humans:
+1. time/fast
+2. accuracy
+
+store: calculator (computing) (brain) + no memory
+
+#45 products = billing counter
+Need of Memory to be attached to the computer has began = volatile + temporary memory has been attached to the computing devices
+
+A computer is a computing device, that helps in performing the computing operations (business operations) by using business data.
+	
+5 products
+1. boost
+2. note book
+3. ricebag
+4. cooking oil
+5. ata (not required)
+
+total bill amount: 345/-
+discount: 5%
+final bill amount: 328
+	
+	
+1. we dont know really the item has been purchased in our store or not
+2. 
+	
+always the business data should be reused to perform various different types of operations on it over the period of time: business data is always long-lived data
+
+business man (store owner):
+ledger/bill registry
+
+all the business data that flows aspart of the business should be recorded and stored permanently, so that it can be reused at later point of time in performing operations using the data.
+paper/physical medium:	
+
+1. write it on the book
+2. feed the data as an input to the computer/calculator to perform operation, the result computed
+3. captured on the book
+
+	
+program computer = data (book)
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

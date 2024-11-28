@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<hibernate-mapping xmlns="http://www.hibernate.org/xsd/orm/hbm">
+    <class name="com.dmlops.entities.TrafficChallan" table="traffic_challan">
+        <id name="challanNo" column="challan_no" unsaved-value="-1">
+            <generator class="increment"/>
+        </id>
+        <property name="vehicleRegistrationNo" column="vehicle_registration_no"/>
+        <property name="driversLicenseNo" column="drivers_license_no"/>
+        <property name="challanDate" column="challan_dt"/>
+        <property name="reasonForChallan" column="reason_for_challan"/>
+        <property name="amount"/>
+    </class>
+</hibernate-mapping>

@@ -1,0 +1,650 @@
+How to work with annotations in Hibernate framework?
+There are 2 places we are using XML configuration files while working with hibernate
+1. mapping file (.hbm.xml)
+2. hibernate configuration file (.cfg.xml)
+	
+2. hibernate configuration file
+Annotations are writen as part of the java classes itself, defining the configuration information about that class.
+When it comes to hibernate configuration file (hibernate.cfg.xml), we are not defining the configuration about a specific class, rather this file holds the holistic configuration of the entire application like database configuration and framework properties aspart of it.
+So we cannot define this information interms of annotations attaching to any class within our hibernate application. either we should choose programmatic approach if we want to avoid writing configuration file or stay with hibernate.cfg.xml only.		
+1. Mapping (.hbm.xml)
+Incase of Mapping file, we use for defining the mapping information about a specific entity class mapping it to a database table, as it defines the configuration about a class, instead of writing the mapping in file, we can use annotations as well.
+	
+How to use annotations in defining the mapping information?
+The support of annotations in hibernate has been introduced:
+3.0 = in 3.0 the hibernate developers has provided hibernate framework annotations using which we can attach mapping information for an entity class
+	
+Later version: 4.0+ 
+In the later versions of the Hibernate, the hibernate has been made as an implementation of jpa api. and in support of jpa  api all the annotations of hibernate framework are deprecated and in hibernate 5 those are removed.
+	
+So while working with hibernate 4.0+ versions we need to annotate entity class with jpa api annotations rather than using hibernate annotations. The hibernate framework developers has integrated hibernate api components (like SessionFactory and Session)	to work with jpa api annotations in reading the mapping information
+
+There are 2 types of annotations are there in jpa/hibernate framework
+1. Physical annotations
+using these annotations we map the entity class and the attributes into the corresponding tables/columns, since we use these annotations in mapping classes to physical schema of the database, these are referred or called as "physical annotations"
+	
+2. Logical annotations
+using these annotations we can attach hibernate framework specific configurations to the entity classes and their attributes, and so these are called "logical annotations"	
+	
+To make an entity class persistable entity, at a minimum we need to write #2 basic annotations in attaching mapping information for an entity class
+	1. @Entity = defines the class as an persistable entity class 
+	2. @Id     = the attribute that is representing the primary key column of your table is indicated through this annotation
+	
+The other annotations we can write on an entity class is as below:
+3. @Table = its an class-level annotation that should be written on an entity class along with @Entity. It is used for attaching the table info corresponding to the entity class. it is optional, incase if we dont specify the table name is treated same as entity class name.
+	
+4. @Column = For each attribute within an entity class we can bind the corresponding column of the table using @Column annotation. it is optional and in absence of it, the attributeName is treated as column Name.
+	
+@Entity
+@Table(name="courses_offered")	
+class Course implements Serializable {
+	@Id
+	@Column(name="course_no")
+	private int courseNo;
+	@Column(name="course_nm")
+	private String courseName;
+	@Column(name="trainer_nm")
+	private String trainerName;
+	@Column(name="institution_nm")
+	private String institutionName;
+	private int duration;
+	private double fee;
+	
+	// accessors
+}	
+
+Hibernate allows us to write annotations inside an entity class at #2 levels
+	1. attribute level
+	2. getter method level
+	
+@Entity
+@Table(name="courses_offered")	
+class Course implements Serializable {
+	private int courseNo;
+	private String courseName;
+	private String trainerName;
+	private String institutionName;
+	private int duration;
+	private double fee;
+	
+	public void setCourseNo(int courseNo) {}
+	@Id
+	@Column(name="course_no")
+	public int getCourseNo() {}
+	
+	public void setCourseName(String courseName) {}
+	@Column(name="course_nm")
+	public String getCourseName() {}
+	...
+}	
+
+Hibernate supports reading the mapping information interms of annotations from both the levels (attribute/getter). But it reads those based on AccessType
+The AccessType can be either
+1. FIELD
+2. METHOD
+
+How does hibernate identifies the accessType, to read?
+It is based on @Id annotation. if we write @Id annotation on attribute level, it treats AccessType as FIELD and only reads all the mapping annotations written at attribute level only ignoring getter level annotations and viceversa
+From the above we can understand dont mix both the levels, use one of it since it reads from one-place only.
+	
+	
+Why does hibernate supports AccessType as METHOD, when we can have them at FIELD level?
+1. In support of interface-driven programming: we can write entity classes also defined with an interface
+	
+interface Course extends Serializable {
+	@Id
+	@Column(name="course_no")
+	public int getCourseNo();
+	public void setCourseNo(int courseNo);
+	
+	public void setCourseName(String courseName);
+	@Column(name="course_nm")
+	public String getCourseName();
+}	
+
+@Entity
+public class CourseImpl implements Course {
+	private int courseNo;
+	private String courseName;
+	
+	public int getCourseNo() {}
+	public void setCourseNo(int courseNo) {}
+	public void setCourseName(String courseName){}
+	public String getCourseName(){}
+}
+
+with this the entity class looks more cleaner, without annotations and the annotations written at interface level will be inherited to the entity class, since we are implementing the interface.
+	
+2. why only getter method, why not setter?
+To support immutable classes, which dont have setters and only have getters defined.
+	
+
+class Bus implements Serializable {
+	private int busNo;
+	private String modelName;
+	private int tires;
+	private int mileage;
+	private double cost;
+	
+	// accessors
+}
+
+bus.hbm.xml
+<hibernate-mapping package="entities">
+	<class name="Bus" table="bus">
+		<id name="busNo" column="bus_no"/>
+		<property name="modelName" column="model_nm"/>
+		<property name="mileage"/>
+		<property name="cost"/>
+	</class>
+</hibernate-mapping>
+
+To make an attribute of a class persistable, we need to map the attribute to a column by defining it as property in the mapping file. 
+Incase if we want to have the attribute as transient (non-persist): then dont define that attribute as property in mapping.
+	
+	
+In annotations:
+
+@Entity
+@Table(name="bus")
+class Bus implements Serializable {
+	@Id
+	@Column(name="bus_no")
+	private int busNo;
+	@Column(name="model_nm")
+	private String modelName;
+	@Transient
+	private int tires;
+	private int mileage;
+	private double cost;
+	
+	// accessors
+}
+
+For each attribute in the entity class, there is a default annotation applied @Basic used to specify the fetchType of the data for that attribute.
+	
+Incase of annotation, how to make an attribute transient: @Transient
+
+hibernate.cfg.xml
+-----------------
+<hibernate-configuration>
+	<session-factory>
+		<property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+		<property name="connection.url">jdbc:mysql//localhost:3306/hibdb</property>
+		<property name="connection.username">root</property>
+		<property name="connection.password">root</property>
+		<property name="show_sql">true</property>
+		
+		<mapping class="com.ha.entities.Bus"/>
+	</session-factory>
+</hibernate-configuration>
+
+
+Test.java
+----------
+Configuration configuration = new Configuration().configure();
+SessionFactory sessionFactory = configuration.buildSessionFactory();
+Session session = sessionFactory.openSession();
+bus = session.get(Bus.class, 1);
+--------------------------------------------------------------------------------------------------------------------------
+Jpa api
+--------
+jpa stands for java persistence api later on renamed to jakarta persistence api. Jpa is an api, so we need implementation to work with an api and hibernate framework acts as an implementation for jpa api
+
+When we work with Jpa api, we code to interfaces/abstract classes of the api, so that our application can easily switch from one implementation to another implementation unlike directly working with frameworks like hibernate or mybatis
+
+There are 2 ways of working with Jpa api application:
+1. configuration approach in writing the mapping information for the entity classes
+2. jpa annotations
+
+The core objects provided aspart of the jpa api are pretty much inline with hibernate framework object hierarchy.
+	
+1. EntityManager = it is similar to Session object, which is intelligent enough in performing persistence operations interms of objects on the underlying database
+
+2. EntityManagerFactory = plays the same role of SessionFactory. The EntityManager will be created by passing mapping and persistence configuration so that it performs all the #3 aspects of
+	1. repository = for holding configuration/mapping info
+	2. connection pool
+	3. factory = for creating the object of EntityManager
+	
+3. Persistence = is similar to Configuration class, which takes care of reading mapping/configuration information using which it creates the object of EntityManagerFactory
+
+
+#1. Entity class
+	
+@Entity
+@Table(name="match")	
+class Match {
+	@Id
+	@Column(name="match_no")
+	int matchNo;
+	@Column(name="tournament_nm")
+	String tournamentName;
+	@Column(name="match_dt")
+	LocalDate matchDate;
+	@Column(name="player1_nm")
+	String player1Name;
+	@Column(name="player2_nm")
+	String player2Name;
+	String location;
+	
+	// accessors
+}	
+
+To perform persistence operation we need database configuration and jpa/implementation vendor configuration, For this 
+	jpa has introduced an standard configuration file called "persistence.xml"
+Few points about persistence.xml
+1. The persistence.xml must and should be placed under classpath of the project within META-INF/ directory only
+2. The name of this configuration file must and should be persistence.xml only
+
+META-INF/persistence.xml
+<?xml version="1.0" encoding="utf-8"?>
+<persistence>
+	<persistence-unit name="pu1">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider> #implementation vendor
+		
+		<class>com.jpa.entities.Match</class>
+		<properties>
+			<property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"></property>
+			<property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/hibdb"></property>
+			<property name="jakarta.persistence.jdbc.username" value="root"></property>
+			<property name="jakarta.persistence.jdbc.password" value="root"></property>
+			
+			<!-- hibernate framework properties -->
+			<property name="hibernate.show_sql" value="true"></property>
+			<property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>			
+		</properties>		
+	</persistence-unit>
+</persistence>
+
+In jpa api based on number of databases we are working with we need to write multiple persistence-unit tags within the persistence.xml unlike in hibernate writing multiple hibernate.cfg.xml. for each persistence-unit we assign an name="" that acts as an identifier using which we create the object of EntityManagerFactory
+
+
+Test.java
+----------
+EntityManagerFactory emf = Persistence.createEntityMangerFactory("pu1");
+EntityManager em = emf.createEntityManager();
+Match match = em.find(Match.class, 1);
+em.close();
+emf.close();
+--------------------------------------------------------------------------------------------------------------------------
+How many objects of the EntityManagerFactory we should create within an Hibernate application?
+one object per one database of the application
+
+How many objects of the EntityManager we need to create within an application?
+one object per one business operation
+
+
+How many persistence.xml files we need to write within an jpa application?
+always it will be only one persistence.xml, no matter how many databases against which we are performing persistence operations within jpa application.
+per each database of your application, corresponding to the database and entity classes/tables we write one persistence-unit (tag) section within the persistence.xml
+
+How many ways we can write mapping information for an entity class?
+There are 2 ways we can write mapping info
+1. orm.xml
+2. jpa annotations
+
+
+how to work with jpa api by writing entity mapping within xml-based configuration file?
+
+@Entity
+@Table(name="recharge_plan")
+class RechargePlan {
+	@Id
+	@Column(name="plan_no")
+	int planNo;
+	@Column(name="plan_nm")
+	String planName;
+	String circle;
+	@Column(name="validity_days")
+	int validityDays;
+	String description;
+	@Column(name="recharge_amt")
+	double rechargeAmount;
+	// accessors
+}	
+by default all the attributes of the entity class are annotated with @Basic annotation, so we dont need to explicitly write any annotation on the attributes to make them persistable.
+
+
+RechargePlan.orm.xml
+--------------------
+<?xml version="1.0" encoding="utf-8"?>
+<entity-mappings>
+	<entity class="com.jpacnf.entities.RechargePlan">
+		<table name="recharge_plan"></table>
+		<attributes>
+			<id name="planNo">
+				<column name="plan_no"/>
+			</id>
+			<basic name="planName">
+				<column name="plan_nm"/>
+			</basic>
+			<basic name="description"/>
+			<basic name="validityDays">
+				<column name="validity_days"/>
+			</basic>
+			<basic name="circle"/>
+			<basic name="rechargeAmount">
+				<column name="recharge_amt"/>
+			</basic>
+		</attributes>		
+	</entity-class>
+</entity-mappings>
+
+META-INF/persistence.xml
+------------------------
+<?xml version="1.0" encoding="utf-8"?>
+<persistence>
+	<persistence-unit name="jpapu">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<mapping>com/jpacnf/entities/RechargePlan.orm.xml</mapping>
+		
+		<properties>
+			<property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+			....
+		</properties>
+	</persistence-unit>
+</persistence>
+
+Test.java
+----------
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("jpapu");
+EntityManager em = emf.createEntityManager();
+RechargePlan plan = em.find(RechargePlan.class, 10);
+sout(plan);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

@@ -1,0 +1,188 @@
+How to manage SessionFactory aspart of the Hibernate Application?
+
+What is Singleton class?
+For a given class, if it allows us to create only one object of it within the scope of the application, then the class is called Singleton class.
+
+Since for the SessionFactory class, we need to create only one object of it, can I call SessionFactory as an Singleton class?
+No, because we can create any number of objects for the SessionFactory by calling buildSessionFactory() method on the Configuration class
+	
+Configuration configuration = new Configuration().configure();
+SessionFactory sessionFactory1 = configuration.buildSessionFactory();
+SessionFactory sessionFactory2 = configuration.buildSessionFactory();
+
+Why did hibernate developers didnt made SessionFactory as Singleton, what is the reason behind it?
+Within the Hibernate application, we can connect to multiple databases in performing the operation, insuch case we need to create multiple SessionFactories each per database of the application, which is why Hibernate developers has not made SessionFactory as singleton.
+	
+	
+If SessionFactory is not an Singleton class, then how to ensure we create only one object of the SessionFactory per one database and reuse it across all the classes within the Hibernate Application?
+Let us create SessionFactory and hold it within one single class within our application (like a registry), and all the Dao classes within the application goes and get the SessionFactory object from the Manager/Helper/Registry of the SessionFactory.
+	
+	
+class SessionFactoryRegistry {
+	private static final SessionFactory sessionFactory;
+	
+	static {
+		Configuration configuration = new Configuration().configure();
+		sessionFactory = configuration.buildSessionFactory();
+	}
+	
+	public static SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+	
+	public static void closeSessionFactory() {
+		if(sessionFactory != null && sessionFactory.isOpen()) {
+			sessionFactory.close();
+		}
+	}
+}	
+
+class AddressDao {
+	public Address getAddress(int addressNo) {
+		SessionFactory sessionFactory = null;
+		Session session = null;
+		Address address = null;
+		
+		try {
+			sessionFactory = SessionFactoryRegistry.getSessionFactory();
+			session = sessionFactory.openSession();
+			address = session.get(Address.class, addressNo);
+		}finally {
+			if(session != null) {
+				session.close();
+			}
+		}
+	}
+}
+
+class Test {
+	public static void main(String[] args) {
+		AddressDao dao = null;
+		
+		try {
+			dao = new AddressDao();
+			address = dao.getAddress(1);
+		}finally {
+			SessionFactoryRegistry.closeSessionFactory();
+		}
+	}
+}
+
+class SessionFactoryRegistry {
+	private final static SessionFactory sessionFactory;
+	
+	static {
+		Configuration configuration = new Configuration().configure();
+		sessionFactory = configuration.buildSessionFactory();
+	}
+	
+	public static SessionFactory getSessionFactory() {
+		return sessionFactory;
+	}
+	
+	public static void closeSessionFactory() {
+		if(sessionFactory != null && sessionFactory.isOpen()) {
+			sessionFactory.close();
+			sessionFactory = null;
+		}
+	}
+}	
+
+SessionFactoryRegistry r1 = new SessionFactoryRegistry();
+SessionFactoryRegistry r2 = new SessionFactoryRegistry();
+
+by declaring SessionFactory attribute as static, we ensure only one copy the variable is available, irrespective of number of objects we create for the SessionFactoryRegistry.
+	
+since the SessionFactory has to be created only once per the application, we can write the instantiation logic within the static-block of the class. Always static blocks will be executed only once within the lifetime of the class, that is during the time of loading the class only.
+-------------------------------------------------------------------------------------------------------------------------
+
+book
+isbn_no (pk)
+title
+author
+published_dt
+publisher
+price
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+	
+
+
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

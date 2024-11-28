@@ -1,0 +1,316 @@
+csv (comma separated value)
+csv stands for comma seperated value. each field data that is being stored on the file is separated by commas. The fields are identified based on comma and field position using which the records of data are being processed in the programs.
+	
+advantages:-
+	1. both human and machine readable
+	2. no memory wastage, so the cost of storing the data is very less
+	3. no prior knowlege or historical reference of the data is needed, no complex decision making of field sizes in storing the data because the fields are identified and processed based on "," not based on field width or size
+	4. no need to rewrite the data within the files or modifying the programming logic when there is a change in field size. because we are not considering field width for processing the data
+
+dis-advantages:-
+	1. only supports sequential access of the data, no random access is possible
+	2. perform data manipulation operations like inserting, deleting and updating the data is very complex
+	3. if the actual data being persisted itself contains ",", then the boundaries are mis-interpreted due to which an incorrect business operation or failure would be arised
+	4. data is not attached with semantics, so that it is hard to interpret the data and share across
+-------------------------------------------------------------------------------------------------------------------------------
+
+3. XML (eXtensible markup language)
+XML stands for eXtensible markup language. Anything that is represented in-terms of tags is called as "Markup language". There are many markup languages are available where all of them are derived from SGML (Standard Graph Markup Language) like
+1. XML
+2. HTML
+3. XHTML
+etc
+
+XML is not an programming language, it is an data representation standard used for storing the data on a File of the computer. There are many data representation standards are there like
+1. pdf
+2. word
+3. excel
+4. json
+5. csv
+6. fixed width field size format
+such a way one of the data representation standard is XML.
+	
+by storing the data on File using XML Standard format, we can have software programs to interpret, parse and process the data easily.
+
+Problem: [CSV]
+1.
+When we are storing or representing the data in CSV format, the data is not being attached with semantics, so that there is always a chance where someother person/program would mis-interpret the data and might result in in-correct operation on the data.
+	
+2. 
+Incase if the actual data itself contains ",", then the fields are mis-interpreted which means the boundaries of the data cannot be derived easily
+
+If the data doesnt have semantics and it is not structured, then there is always a chance of mis-interpreting the data, thus results in performing in-correct operation
+
+Unlike CSV, when it comes to XML
+1. XML allows us to store semantics of the data along with the data
+2. In addition the data that is being stored in XML format is structured which means we can derive the boundaries of the data
+
+as the information/data that is being stored in XML has semantics and structure, there is no chance someone mis-interpret the data, so that it always leads to higher accuracy in carrying the operations on that data.
+	
+sales.xml   #java, #python, #php, #scala, #ruby, #.net
+-----------
+<sales>
+  <sale>
+	  <sno>1</sno>
+		<customer-name>Anderson</customer-name>
+		<sale-date>04/30/2024</sale-date>
+		<quantity>4</quantity>
+		<amount>250.67</amount>
+	</sale>
+</sales>
+
+XSD/DTD = is an another document in which write rules on how the data should be represented in an XML to be used.
+
+	
+How to write the data in XML?
+1. All the data must and should be enclosed between the Tags. There are 2 types of tags are there
+1.1 opening tag
+1.2 closing tag
+
+Through tags we attach semantics to the data and we define boundaries of the data. due to this always XML enforces us to write the data in tags.
+	
+2. Every XML document must and should start with one starting element called "root" element and there must be only on root element only.
+	
+since XML is an text-based data representation standard, it is highly inter-operable, which means it is portable across all the operating system platforms and can be read/processed by any programming language programs aswell.
+	
+---
+There are different entities of data flows aspart of the business (like customer, sale etc) and all of these entities has relationship between them. Unless we represent and derive relationship across these entities we cannot perform operation using that data.
+	
+Note: Always the real-world data has relationships.	
+	
+None of the previous data representation standards like CSV or Fixed-Width Field size format doesnt support representing relationship across the entities, those are Linear data representation models.
+	
+unlike these XML is the data representation model that supports relationship between the data by representing the data in hierarchial model.
+	
+one-way of representing the relationship is by using hierarchial relationship model.
+	
+
+sales.txt
+----------
+<customers>
+  <customer> 
+	  <cno>c1</cno>
+		<customer-name>anderson</customer-name>
+		<dob>12/01/1989</dob>
+		<gender>Male</gender>
+		<sales>
+		  <sale>
+			  <sno>s1</sno>
+				<sale-date>04/28/2024</sale-date>
+				<quantity>4</quantity>
+				<amount>345</amount>
+			</sale>
+			<sale>
+			  <sno>s2</sno>
+				<sale-date>04/29/2024</sale-date>
+				<quantity>41</quantity>
+				<amount>3450</amount>
+			</sale>
+		</sales>
+	</customer>
+	<customer>
+	  <cno>c1</cno>
+		<customer-name>paul</customer-name>
+		<dob>12/02/1989</dob>
+		<gender>Male</gender>
+		<sales>
+		  <sale>
+			  <sno>s1</sno>
+				<sale-date>04/20/2024</sale-date>
+				<quantity>14</quantity>
+				<amount>1345</amount>
+			</sale>
+			<sale>
+			  <sno>s2</sno>
+				<sale-date>04/30/2024</sale-date>
+				<quantity>4</quantity>
+				<amount>345</amount>
+			</sale>
+		</sales>
+	</customer>
+</customers>	
+
+
+advantages:-
+	1. both humans and machines can understand the data
+	2. as the data is attached with semantics and is represented in structured format, there is no chance of mis-interpreting the data so that it results in higher accuracy in using the data
+	3. XML supports data validation through XSD/DTD 
+  4. XML permits us to represent relationship between the data using hierarchial representation.
+	5. inter-operable
+	6. there are several traversal mechanisms are there that supports reading the data from XML sequentially and randomly. there is a rich support from programming languages interms of api/libraries in reading / writing the data into XML
+	
+dis-advantages:-
+	1. everyone cannot go and represent the data in XML, we need to know the rules over representing/storing the data in XML format. In-short: it is not everyones language.
+	2. XML is too verbosed, due to which it results in too much amount of memory wastage.
+	3. since it is hierarchial data representation mode, it requires more cpu and memory in processing the data. For large volumes of data, there is a chance where programs run into out of memory issues.
+	4. The learning curve required in learning and using the XML is too high because there are lot of technics and libraries are available to be understood inorder to work with XML like
+		1. SAX
+		2. DOM
+		3. STAX
+		4. XPATH
+		5. XQUERY
+		6. XSLT
+		7. JAXB
+		etc
+	thus making it very complex and difficult to use.
+		
+By the above we can understand XML is too verbosed and requires more cpu/memory to process the data, as business data is huge in nature, we can understand XML is not suitable for handling large-volumes of business data.
+	
+it is only suitable for storing less volumes of data with fixed access patterns like: configuration
+
+
+4. Serialization
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	

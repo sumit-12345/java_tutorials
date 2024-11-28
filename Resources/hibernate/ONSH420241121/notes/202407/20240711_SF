@@ -1,0 +1,172 @@
+2. SessionFactory
+There are lot of responsibilities being performed by the SessionFactory as below:
+Responsibilities:
+	2.1 It acts as an repository for holding the mapping and configuration information aspart of it, so that everytime when we request the object of the Session, it creates the session object by passing the mapping/configuration information that it holds aspart of its repository, avoiding re-reading the same from the Filesystem of the computer.
+	hence: performance of the application is improved	
+	2.2 during the time of instantiating the SessionFactory, it goes to the database acquires connections and creates an ConnectionPool and holds within it. So that each time when we requested the object of the Session, the SessionFactory can quickly wrap the Connection object into the Session along with mapping/configuration information and returns to us.
+	advantage: since the connection establishing/releasing is an costly job and burns out lot of system resources, by creating an connection pool by SessionFactory will improves the performance of the application					
+	2.3 It acts as an factory for creating the object of the Session.
+		
+SessionFactory is immutable, once after creation we cannot modify the metadata	(mapping/configuration) that is loaded aspart of the SessionFactory.
+		
+*******
+How many objects of the SessionFactory should be created within an Hibernate Application?
+since SessionFactory holds configuration information, mapping information and Connection Pool aspart of it, it is considered as heavy weight object.
+
+So if we create multiple objects of the SessionFactory per each operation:
+we endup in duplicating the mapping information, configuration information being placed across the SessionFactory objects which leads to huge jvm memory wastage.
+More importantly: per each SessionFactory object being created an new connection pool is being created, which is an costly job and results in huge degradation in the performance of the application
+So avoid creating multiple objects of the SessionFactory within the application.
+	
+Note: always the SessionFactory object should be closed at the end of the application, so that the ConnectionPool will be released or closed along with that.
+From this we can understand: At the begining of the application we need to create SessionFactory and at the end of the application we need to close the SessionFactory.
+--------------------------------------------------------------------------------------------------------------------------
+3. Session
+
+Session is the intelligent object within the Hibernate application, it holds the connection, mapping and configuration information using which it performs persistence operations on the underlying databse tables interms of objects.
+	
+The SessionFactory while creating the object of the Session, it pulls an Connection	from its ConnectionPool wraps it into the Session object along with configuration and mapping information into it.
+	
+Session session = sessionFactory.openSession();
+1. Connection is associated
+2. mapping and configuration information is populated into the Session object
+
+when we ask Session object to perform an database operation like
+Session.get(Address.class, 1);
+it performs below operations in carrying the job:
+1. The session object goes to the configuration inside it and tries to locate the corresponding mapping file based on the <class> element, for the entity class we have requested.
+2. once the mapping file has been found, it extracts the database information out of it (tables/columns)
+3. then asks the dialect to generate sql query based on the type of the operation we have requested
+		for eg.. get() = select query
+		         save() = insert query
+						 update() = update query
+						 delete() = delete query
+4. creates the PreparedStatement using the sql query generated
+5. substitutes the positional parameters if any
+6. executes the prepared statetement
+7. if it is an select query takes the ResultSet and passes it to GenericMapper asking to convert into object
+8. return the outcome
+
+How many objects of the Session should be created within an Hibernate application?
+per each business operation we perform, we need to create a new Session object and at the end of the operation we should close the Session object.
+	
+	
+		
+bus
+bus_no registration_no  model_nm  make   color  capacity  cost
+
+class Bus implements Serializable {
+	private int busNo;
+	private String registrationNo;
+	private String modelName;
+	private String make;
+	private String color;
+	private int capacity;
+	private double cost;
+	// accessors
+	// equals & hashcode
+	// toString() #purpose of printing the object
+}
+		
+Bus.hbm.xml
+------------
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE...>
+<hibernate-mapping package="com.hco.entities">
+	<class name="Bus" table="bus">
+		<id name="busNo" column="bus_no"/>
+		<property name="registrationNo" column="registration_no"/>
+		<property name="modelName" column="model_nm"/>
+		<property name="make"/>
+		<property name="color"/>
+		<property name="capacity"/>
+		<property name="cost"/>
+	</class>
+</hibernate-mapping>
+
+hibernate.cfg.xml
+-----------------
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE...>
+<hibernate-configuration>
+	<session-factory>
+		<property name="connection.driver_class">..</property>
+		<property name="connection.url">...</property>
+		....
+	</session-factory>
+</hibernate-configuration>
+
+
+class BusDao {
+	public Bus getBus(int busNo, SessionFactory sessionFactory) {
+		Session session = null;
+		Bus bus = null;
+		
+		try {
+			session = sessionFactory.openSession();
+			bus = session.get(Bus.class, busNo);
+		}finally {
+			if(session != null) {
+				session.close();
+			}
+		}
+		
+		return bus;		
+	}	
+}
+
+class Test {
+	public static void main(String[] args) {
+		Configuration configuration = new Configuration().configure();
+		SessionFactory sessionFactory = configuration.buildSessionFactory();
+		
+		try {
+			BusDao busDao = new BusDao();
+			Bus bus = busDao.getBus(1, sessionFactory);
+			sop(bus);
+
+			// at the end of the main method, close the SessionFactory
+		}finally {
+			if(sessionFactory!= null) {
+				sessionFactory.close();
+			}
+		}
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

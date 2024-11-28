@@ -1,0 +1,143 @@
+first-level cache = operation-level cache (transaction-level cache)
+How to enable first-level cache? 
+by default enabled
+
+How to disable first-level cache?
+no way
+
+Why we cannot disable first-level cache?
+if we disable, it effects the performance and memory of the hibernate application. 
+	(or)
+it effects the hibernate echo system in running the application
+
+
+How does first-level cache will help?
+	(or)
+Not all the data is an candidate for caching, but how does hibernate has made the first-level cache as default and not disabled?
+since it is scoped to the operation-level which would exists only for few milli-seconds, the chances of having any data being modified within the shortest-interval is very less, and there is high chance of repeatedly accessing the same data wihtin the scope of the operation is very high, so all the data is a good candidate for caching.
+--------------------------------------------------------------------------------------------------------------------------
+Relationship Mappings  #important 
+----------------------
+In a real-world application, all the business data has relationship between them. So to store and represent the real-world  data with relationships, in the database we create tables with relationships
+
+When we are modelling these tables of the database into entity class, we need to map the database table relationships into entity class relationships. Along with that we need to let the hibernate understand how did we represented the underlying table relationship into object relationship, so that hibernate can be perform persistence operations accordingly. The process of mapping table relationships into class relationship and modelling them with hibernate is called "relationship mappings"
+	
+	
+How many types of relationships can be there between the tables?
+1. one-to-one
+	1.1 direct one-to-one 
+		Write pk of one table as pk and fk in another table, that makes the tables into direct one-to-one relationship. If the child table doesnt have independent identity and individual existence (unless parent exists child cannot be there), in such case we establish direct one-to-one relationship
+		For eg: Bill, ItemizedBill
+	
+	1.2 one-to-many as one-to-one
+		write pk of one table as fk in another table, and mark the fk column as unique will logically makes the tables as one-to-one.
+		if parent and child table records has independent existence and individual identities, then we use one-to-many as one-to-one
+		For eg: Account, Locker
+	
+2. one-to-many/many-to-one
+		Write pk of one table as fk in another table
+		
+3. many-to-many
+		We need third-table called as "relationship table". In this table we need to declare both tables pk as composite pks and fks
+	  For eg: order, product
+--------------------------------------------------------------------------------------------------------------------------
+How many ways we can establish relationship between the classes?
+There are 2 ways
+1. inheritance
+  There are #3 forms of inheritance relationship exists
+	1.1 Generalization (child to the parent = bottom to top approach)
+	1.2 Specialization (from parent class we derive child = top to bottom)
+	1.3 Realization (implementing interface/contract)
+			
+2. association
+	There are #3 form of association relationship exists
+	2.1 association
+	2.2 aggregation
+	2.3 composition
+	
+based on the cardinality, directionality and ownership of the relationship, we derive the association is of which degree
+
+
+From the above we can understand there are #3 forms of relationships in the database tables and #2 forms of object relationships are there in object oriented world. this means the #3 forms of table relationships can be represented in either of the #2 forms of class relationship
+So from the above we can understand there are #2 ways of mapping table relationships into object relationships which are
+	1. Inheritance mappings
+	2. Association mappings
+
+#1. Inheritance Mapping Model
+------------------------------
+Inheritance mapping model is all about mapping inheritance relationship between the entity class into the table relationship 
+	
+#concept = 100% programming becomes easy
+
+	
+	
+                   InsurancePlan
+                     |        |
+	                   |        |
+AccidentalInsurancePlan      MedicalInsurancePlan	
+	
+1. Insert/Update
+Super class object = only the superclass attributes we need to store
+Subclass object = along with subclass attributes we should be persisting the inherited attributes of the super class as well.
+Then we are respecting inheritance relationship
+	
+	
+2. Select/Querying
+Super class object = fetch parent record interms of parent class object itself
+Subclass object = while fetching the subclass record, it should support fetching it either as subclass reference type or even superclass reference type as well. (polymorphic access)
+
+3. delete
+super class object = 
+
+
+	
+	
+	
+Entity classes with Inheritance hierarchy  = polymorphism (a child can be expressed interms of parent class reference type)
+	
+Inheritance Mapping model = create a table model for the entity classes within the hierarchy, so that these tables should allow/support us to perform database operations for these entity classes in a polymorphic way
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

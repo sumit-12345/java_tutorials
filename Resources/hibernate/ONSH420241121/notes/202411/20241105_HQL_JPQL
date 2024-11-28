@@ -1,0 +1,402 @@
+HQL/JPQL
+---------
+HQL stands for hibernate query language and JPQL stands for jakarata persistence query language. 
+The Hibernate or Jpa api has provided get()	and find() methods in querying the single record of data interms of object from the database table, so these methods are called single record query apis
+
+always aspart of our application we dont want to query one record based on primary key rather we want to fetch bunch of records from the database tables based on various different conditions. The only way to fetch bunch of records from the database based on various different conditions using sql queries
+
+every RDMBS database supports sql queries in quering the data based on complex query conditions. So programs can use these sql queries aspart of the java programs in querying the data from database. These queries that we write in querying the data from database are called "native sql queries"
+	
+There are problems in using/working with native sql queries:
+1. the native sql queries are specific to the database against which those are written for and are not portable across the databases. every time when we want to switch the underlying database against which we want to run the application, we need to rewrite the queries within our programs.
+	
+when we rewrite the queries the logic in wrapping the data from the queries within the java program also needs to be changed, which incurrs huge amount of maintainance in developing the application
+
+2. aspart of the native sql queries we use table names and column names in querying the data, so that our application logic is exposed to the underlying schema of the database. So if there is a change in the schema model it effects the sourcecode of our application
+
+To overcome these problems in querying the data from database, hibernate/jpql api has introduced hql/jpql queries respectively. The hibernate framework or jpql api has provided their own query constructs/clauses that should be used in writing the queries.  Now we are not writing the queries specific to database, rather those queries are independent of the database as we used hibernate/jpql query clauses in writing them.
+
+advantage or how does they work:
+
+1. The hql or jpql queries are called "object-query language", because aspart of these queries we will not refer tablename or column name from which we want to fetch the data rather we are going to write these queries by referring to entity classes and attributes of them
+
+sql query: select manufacturer_no, manufacturer_nm, established_dt from manufacturer
+hql/jpql query: select m.manufacturerNo, m.manufacturerName, m.establishedDate from com.otm.entities.Manufacturer m
+
+for these entity classnames and attributeNames we used in the query, hibernate/jpql determines corresponding tables and columns by means of mapping info. In future if there is a change in table name or columnName still my queries remains same, only change is in mapping file.
+	
+since the mapping is written only at one place, modifying the mapping info is very easy and maintainable.
+	
+2. 
+while writing the queries using hql/jpql the programmers are not referring to the query clauses pertaining to a database management system. so the queries we have written are independent of database.
+	
+but how can the database management system can understand and execute these hql/jpql query clauses?
+The databases only can understand sql queries and that too the clauses the database supports. they cannot understand hql/jpql queries
+
+That is where hibernate/jpql has provided dialect. For each database the hibernate/jpql has provided one dialect, that is responsible for translating the hql/jpql queries into database specific native queries, so that these queries can be passed to the underlying database in running them
+
+since in our application logic we are writing hql/jpql queries and are translated into native queries at runtime by dialect when we switch from one database to another database we dont have to modify the queries, rather we need to change the diaect being used in our application. Hence our application will be portable across the databases.
+-------------------------------------------------------------------------------------------------------------------------------
+There are #2 parts are there in working with hql/jpql queries
+1. learn hql/jpql query language and their clauses
+2. how to write the code in hibernate/jpa api in executing these hql/jpql queries in gathering the objects of data in our application
+
+Let us understand how to execute an hql or jpql query by taking an simple query as an example.
+From Hibernate 5.x onwards the hibernate apis pertaining to
+1. hql queries
+2. criteria api 
+has been marked as deprecated and is removed in hibernate 6.x
+
+The only way to run/execute an hql or jpql queries while working with hibernate is using jpa api only.
+	
+basics of hql/jpql query language:
+
+native sql:	select * from product
+
+hql query:
+1. while writing the hql/jpql query, the select clause is optional, and incase if we have not specified it is equal to querying all the columns of the record
+2. we should use entity classnames in referring the tables from where we want to query from
+
+from com.otm.entities.Product
+
+There is an clause or option aspart of the mapping file called auto-import="true/false" for each entity class 
+	
+Product.hbm.xml
+<hibernate-mapping package="com.otm.entities">
+	<class name="Product" table="product" auto-import="true/false">
+		<id name="productNo" column="product_no"/>
+		...
+	</class>
+</hibernate-mapping>
+
+The default value if not specified the auto-import is "true"
+	
+The auto-import indicates while writing the hql/jpql queries we dont need to specify the fqn entity class if it is true, the package name of the class will be imported automatically. This means the above query can be written as 
+
+from Product
+
+Incase if we have #2 entity classes with the same name under different package then it results in ambiguty, insuch case to resolve the ambiguty we need to use fqn classname in writing the queries.
+	
+How to run hql/jpql queries?
+We need to use jpql query api for querying/executing the jpql/hql queries
+
+
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu1");
+EntityManager em = emf.createEntityManager();
+
+TypedQuery<Product> allProductsQuery = em.createQuery("from Product", Product.class);
+List<Product> products  = allProductsQuery.getResultsList();
+
+
+hql query language
+1. where clause
+2. aggregate functions (min, max, count, sum, avg)
+3. single column or multiple columns instead of entire object
+4. groupBy
+5. having
+6. join queries
+7. orderby
+-------------------------------------------------------------------------------------------------------------------------------
+
+Join queries in hql/jpql
+------------------------
+If we want to query or fetch the data from multiple tables together based on their relationship, then we need to use join queries
+There are #3 types of joins are there
+1. inner join       = matching records from both the tables will be returned as an outcome
+2. left-outer join  = all the records from table to the left, along with matching records of the right table will be returned as outcome
+3. right-outer join = all the records from table to the right, along with matching records of the left table will be returned as outcome
+	
+	
+How do we query the data across the tables by joining them?
+The data across the tables are persisted by relating them using primary key of table being stored as foreign key in another table.
+	
+manufacturer (table)
+manufacturer_no (pk)  manufacturer_nm  established_dt  location	
+
+product (table)
+product_no (pk)	product_nm  description  category_nm  price  manufacturer_no (fk)
+	
+so inorder to query the data across the tables, we need to fetch the records from both the tables matching based on pk and fk only
+
+select * from product p inner join manufacturer m on p.manufacturer_no = m.manufacturer_no where m.manufacturer_nm = ?
+	
+	
+In HQL there are #2 ways of writing the join queries there
+1. implicit join
+incase of implict join we dont use join keyword in joining the data across the tables/entity classes, rather we rely on association object to perform join
+
+2. explicit join
+
+@Entity
+@Table(name="manufacturer")
+class Manufacturer {
+	@Id
+	@Column(name="manufacturer_no")
+	@GeneratedValue(...)
+	int manufacturerNo;
+	String manufacturerName;
+	..
+	@OneToMany(mappedBy="manufacturer")	
+	Set<Product> products;	
+}	
+
+@Entity
+@Table(name="product")
+class Product {
+	@Id
+	@Column(name="product_no")
+	@GeneratedValue(...)
+	int productNo;
+	String productName;
+	..
+	@ManyToOne
+	@JoinColumn(name="manufacturer_no")	
+	Manufacturer manufacturer;
+}
+	
+	
+while querying the data across the tables, we need to specify the relationship columns based on which we needs to be joined.
+	
+implict join:-	  
+select p from Product p where p.manufacturer.manufacturerName = :manufacturerName
+
+In hibernate the join condition in fetching the data across the tables is specified aspart of the associated objects itself. So in querying the data across the tables, we just need to refer the associated object. From this hibernate will determine based on what columns (pk/fk) the tables needs to be joined
+
+Few points about implicit joins:
+1. implicit join always performs inner join only
+2. we cannot perform implicit join on collection associations since we cannot dereference the collection types
+
+explicit join:
+fetch all the manufacturers who are manufacturing the products of category 'electronics'
+	
+select m from Manufacturer m inner join m.products p where p.category=:category
+
+query: show all the products that are manufactured by the manufacturers who are established 10 years before
+select p from Product p where p.manufacturer.establishedDate > :date
+
+
+query: show all the manufacturers who are manufacturing the products of price greaterThan 50000
+select m from Manufacturer m inner join m.products p where p.price > :price
+
+query: how many products are manufactured by a given manufacturer
+select count(p) from Product p where p.manufacturer.manufacturerName=?
+	
+select size(m.products) from Manufacturer m where m.manufacturerName=?
+	
+query:
+show all the manufacturers who are manufacturing at least #2 products
+
+select m from Manufacturer m where size(m.products) > 2
+		
+sub-query:
+
+select p from Product p where p.manufacturer in (select m from Manufacturer m where m.businessName = ?);
+select p from Product p where p.manufacturer.manufacturerName=?
+-------------------------------------------------------------------------------------------------------------------------------
+Named Queries
+
+private static void allProducts() {
+		EntityManagerFactory entityManagerFactory = null;
+		TypedQuery<Product> allProductsQuery = null;
+		EntityManager entityManager = null;
+		List<Product> products = null;
+
+		try {
+				entityManagerFactory = EMFRegistry.getEntityManagerFactory();
+				entityManager = entityManagerFactory.createEntityManager();
+				allProductsQuery = entityManager.createQuery("from Product", Product.class);
+				products = allProductsQuery.getResultList();
+
+				products.forEach(System.out::println);
+		} finally {
+				if (entityManager != null) {
+						entityManager.close();
+				}
+		}
+}
+	
+when we execute an hql/jpql query, the query will translated into native sql query during runtime by using the dialect and will be passed to the underlying database to execute. If we try running the query for 30 times, the query translation will happen for #30 times which kills the performance
+
+To overcome the above performance problem in translating the query repeatedly, the hibernate/jpa api has introduced named queries
+
+Named queries are pre-defined or pre-declared queries at the entity class-level.
+
+@Entity
+@Table(name="product")
+@NamedQueries({
+	@NamedQuery(name="allProducts", query="from Product")
+})
+class Product {
+	@Id
+	@Column(name="product_no")
+	@GeneratedValue(...)
+	int productNo;
+	String productName;
+	..
+	@ManyToOne
+	@JoinColumn(name="manufacturer_no")	
+	Manufacturer manufacturer;
+}
+
+during the time of creating the EntityManagerFactory, it reads the metadata or mapping info for all the entity classes, along with this it sees the Named queries we declared at the entity class-level and parses them and generates the native sql query and caches these queries at the EntityManagerFactory
+
+while running the queries we refer the namedQuery name in executing the query, that uses the pre-compiled native sql query in running. So the translation happens only once that too during the startup of the application only.
+	
+	
+private static void allProducts() {
+		EntityManagerFactory entityManagerFactory = null;
+		TypedQuery<Product> allProductsQuery = null;
+		EntityManager entityManager = null;
+		List<Product> products = null;
+
+		try {
+				entityManagerFactory = EMFRegistry.getEntityManagerFactory();
+				entityManager = entityManagerFactory.createEntityManager();
+				allProductsQuery = entityManager.createQuery("from Product", Product.class);
+				products = allProductsQuery.getResultList();
+
+				products.forEach(System.out::println);
+		} finally {
+				if (entityManager != null) {
+						entityManager.close();
+				}
+		}
+}
+-------------------------------------------------------------------------------------------------------------------------------
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+	
+	

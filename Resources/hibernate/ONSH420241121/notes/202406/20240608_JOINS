@@ -1,0 +1,194 @@
+Join queries
+-------------
+since the data is distributed across multiple tables, inorder to query the data across the tables in RDBMS database we need to join the tables together based on their relationship
+
+In order to join and fetch the data we need to identify which record of my table is related with which other record of another table, how can we derive this relationship between the records across the tables?
+We can identify the records of data across the tables based on relationship columns only which are pk and fk
+
+
+There are 3 types of joins are there
+1. Inner join
+2. Left outer join
+3. Right outer join
+-------------------------------------------------------------------------------------------------------------------------------
+ORM Technology
+object relational mapping technology is about mapping the data from relational database tables into object model.	
+In RDBMS the data is broken and distributed across the tables by establishing relationship between them, so while mapping the data from these tables in objects we need to represent the relationship of the data interms of tables into corresponding object relationships unless otherwise the meaning of the data is not carried.
+	
+For eg.. we have #2 tables
+1. product table
+2. manufacturer table
+
+table: product                                                                  table: manufacturer
+product_no  product_nm                       price   m_no (fk)                  manufacturer_no  manufacturer_nm
+p1          LG 32Inch OLED                   50000   m1                         m1               LG
+p2          5.5 kg Frontload Washing machine 36000   m2                         m2               Samsung
+p3          Bluetooth speaker                 8000   m1                         m3               Apple
+p4          512 SSD Laptop                   60000   m3
+p5          Wireless Earbuds                 23000   m3
+
+	
+class Product {
+	String productNo;
+	String productName;
+	double price;
+}	
+
+class Manufacturer {
+	String manufacturerNo;
+	String manufacturerName;
+}
+
+so per each table we need to create one class in java, so that we can carry the records of data into its corresponding objects. but while mapping the data from the table into objects we need to represent relationship of the data in database in object model as well.
+	
+In the above example we have product in relationship with manufacturer in database tables. but when it comes to classes we designed we didnt potraied that relationship, so that we cannot perform business operation on that data based on relationship.
+	
+so how to establish relationship between the classes in object world? So that we can map database relationships into corresponding object relationship?
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

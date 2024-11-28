@@ -1,0 +1,93 @@
+Table per subclass (jpa: JOINED)
+---------------------------------
+
+@Entity
+@Table(name="television")
+@Inheritance(strategy=InheritanceType.JOINED)	
+class Television implements Serializable {
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="television_product_code")
+	int productCode;
+	@Column(name="model_no")
+	String modelNo;
+	@Column(name="model_nm")
+	String modelName;
+	String manufacturer;
+	String dimensions;
+	double price;
+	
+	// accessors
+}
+
+@Entity
+@Table(name="lcd_television")
+@PrimaryKeyJoinColumn(name="lcd_television_product_code")
+class LCDTelevision extends Television {
+	@Column(name="panel_type")
+	String panelType;
+	String resolution;
+	@Column(name="display_type")
+	String displayType;
+	
+	// accessors
+}
+
+@Entity
+@Table(name="oled_television")
+@PrimaryKeyJoinColumn(name="oled_television_product_code")
+class OLEDTelevision extends Television {
+	@Column(name="led_technology")
+	String ledTechnology;
+	@Column(name="refresh_rate")
+	int refreshRate;
+	
+}
+
+persist:
+subclass (LCDTelevision):
+1. Store the inherited attributes of LCDTelevision object in the superclass table
+2. pick the pk value of the parent table record
+3. store it as fk in the subclass table 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

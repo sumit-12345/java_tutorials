@@ -1,0 +1,454 @@
+Hibernate Tools
+----------------
+To work with database in a java application, the Java platform has provided jdbc api. But working with jdbc api, the programmer ends up with writing lot of boiler-plate logic, that leads to
+	1. more time in developing the application
+	2. more manpower needed 
+	3. more cost in building
+	4. chances of increasing the bugs would be high
+	
+to over the problem with jdbc api, Hibernate Framework is introduced.
+	
+While working with Hibernate Framework, developers has to write entity classes representing the database tables and mapping files to map the classes to the corresponding tables, so that hibernate can help us in retrieving the data from database tables interms of objects directly eliminating most of the boiler-plate logic
+
+But all this will not comes for free, we need to pay price for it!
+Inorder to make hibernate framework work for our application in performing the database operations, the developers has to manually write entity classes for each table within the database. These entity classes has to be written based on the structure of the table along with relationships between them.
+	
+In addition for each entity class, developer has to write mapping information describe the class to the table with relationships being represented.
+	
+The number of entity classes and the mapping files to be written is directly proportionate to number of tables in the database, which leads to huge amount of time and complexity in creating them
+
+From this we can understand hibernate will not works for our application freely, there is lot more things that we need to from our end in pouring the information about the database tables and the classes of our application to hibernate to make it work.
+	
+This seems to be lot more complex and time taking than working with jdbc api!
+
+The process of creating the entity classes out of the tables is pretty much standard, irrespective of who is involved in working on it. since it is an standard process, instead of developers manually creating these entities for the tables and writing mapping files for them
+
+The hibernate has provided hibernate tools that helps in quickly generating the entity classes and mapping files out of the schema model, in this way there are bunch of different tools are provided by the hibernate framework enabling the application developers in quickly jump starting in working with hibernate application
+
+There are 2 types of tools are provided by the Hibernate Framework
+1. Graphical User-interface based tools (eclipse plugins) 
+gui tools helps us in building the hibernate assets or artifacts (entities/mappings) from an existing schema or database model. initial start of the project, we define the data model, write database scripts in creating the database objects like tables, views, indexes, sequences etc
+once we have the database in-place, the developers has build hibernate couterparts within the java application like entities and mapping information, rather than manually writing these hibernate assets the developers can make use of the graphical user interface tools in creating the automatically
+gui=> schema -> java
+
+	1.1 Hibernate Configuration File
+	1.2 Hibernate mapping editor
+	1.3 database explorer
+	1.4 reverse engineering wizard
+	1.5 hibernate console configuration
+	1.6 hql editor
+	1.7 criteria editor
+	
+2. Command-Line interface tools	
+Helps us in quickly creating or updating or validating the schema out of the existing mapping information of the entity classes. So that developer can quickly work on development without worrying about how to create, update or validate the tables.	
+cli -> java -> schema
+
+	2.1 SchemaExport
+	2.2 SchemaUpdate
+	2.3 SchemaValidate
+	
+
+
+#2. Command-Line Tools
+There are #3 command line tools are provided by hibernate framework
+1. SchemaExport
+2. SchemaUpdate
+3. SchemaValidate
+
+The command-line tools are meant for creating/updating/validating the schema from the existing entity classes and their mapping info. 
+	
+These 3 tools are nothing but java classes ifself written by the hibernate framework developers and shipped them aspart of hibernate jars (hibernate-ant-x.x.jar). 	
+
+So inorder to run these #3 java class tools, we need to set classpath pointing to the hibernate-antxxx.jar, but the logic inside these classes refers to someother classes that are part of other hibernate jars and third-party libraries hibernate is dependent on.
+	
+so inorder to run these classes we need to set classpath pointing to all the hibernate framework jars and other third-party libraries that hibernate depends on.
+	
+	
+1. SchemaExport
+The SchemaExport tool is used for create/drop the database tables from the existing entities, mapping and configuration files.
+	
+The SchemaExport tool inorder to create or drop the database tables, it should have the information about the database and corresponding tables. since we have captured all the details about the database, tables and the columns aspart of hibernate configuration file and mapping file, these acts as an input to the SchemaExport tool inorder to perform the operation.
+	
+package com.htools.entities;	
+@Entity
+@Table(name="address")
+class Address {
+	@Id
+	@Column(name="address_no")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	int addressNo;
+	@Column(name="address_line1")	
+	String addressLine1;
+	@Column(name="address_line2")
+	String addressLine2;
+	String city;
+	String state;
+	int zip;
+	String country;
+	
+	// accessors
+}	
+
+hibernate.cfg.xml
+<?xml version="1.0" encoding="utf-8"?>
+<hibernate-configuration>
+	<session-factory>
+		<property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+		...
+	</session-factory>
+</hibernate-configuration>
+#dialect is mandatory
+
+here we have entity classes, mapping information and configuration file, inorder to run the project we need database tables. There are 2 ways we can create the database tables
+
+1. we can create database schema through dbscripts written during the data modelling
+2. instead of we creating the tables by running the dbscripts manually we can make use of SchemaExport tool for
+	1. creating schema/tables
+	2. dropping existing schema/tables
+from the database
+
+Usecases:
+1. during the time of development, the developer can quickly create tables out of the existing entity classes and their mapping using the SchemaExport.
+2. during the time of running the unittest: 	There are unittests pertaining to database, inorder to run them we need new database schema with tables and at the end of the execution we should drop these schema/tables, that can be done easily using SchemaExport
+
+d:\work:/>
+hibernatetools
+|-src
+	|-main
+		|-java
+			|-entity classes 
+		|-resources
+			|-hibernate.cfg.xml
+|-pom.xml
+	[depenencies]
+|-target/
+	
+all the dependencies that are part of the project are required for running SchemaExport, SchemaUpdate and SchemaValidate tools. So we can get the list of jar dependencies and their third-party dependencies out of the pom.xml by running the below maven command on terminal/command-prompt
+
+d:\work\hibernatetools:/> mvn dependency:tree
+[INFO] com.hibernate:hibernatetools:jar:1.0-SNAPSHOT
+[INFO] +- org.hibernate.orm:hibernate-core:jar:6.5.2.Final:compile
+[INFO] |  +- jakarta.persistence:jakarta.persistence-api:jar:3.1.0:compile
+[INFO] |  +- jakarta.transaction:jakarta.transaction-api:jar:2.0.1:compile
+[INFO] |  +- org.jboss.logging:jboss-logging:jar:3.5.0.Final:runtime
+[INFO] |  +- org.hibernate.common:hibernate-commons-annotations:jar:6.0.6.Final:runtime
+[INFO] |  +- io.smallrye:jandex:jar:3.1.2:runtime
+[INFO] |  +- com.fasterxml:classmate:jar:1.5.1:runtime
+[INFO] |  +- net.bytebuddy:byte-buddy:jar:1.14.15:runtime
+[INFO] |  +- jakarta.xml.bind:jakarta.xml.bind-api:jar:4.0.0:runtime
+[INFO] |  |  \- jakarta.activation:jakarta.activation-api:jar:2.1.0:runtime
+[INFO] |  +- org.glassfish.jaxb:jaxb-runtime:jar:4.0.2:runtime
+[INFO] |  |  \- org.glassfish.jaxb:jaxb-core:jar:4.0.2:runtime
+[INFO] |  |     +- org.eclipse.angus:angus-activation:jar:2.0.0:runtime
+[INFO] |  |     +- org.glassfish.jaxb:txw2:jar:4.0.2:runtime
+[INFO] |  |     \- com.sun.istack:istack-commons-runtime:jar:4.1.1:runtime
+[INFO] |  +- jakarta.inject:jakarta.inject-api:jar:2.0.1:runtime
+[INFO] |  \- org.antlr:antlr4-runtime:jar:4.13.0:runtime
+[INFO] +- org.hibernate.orm:hibernate-ant:jar:6.5.2.Final:compile
+[INFO] \- com.mysql:mysql-connector-j:jar:8.4.0:compile
+[INFO]    \- com.google.protobuf:protobuf-java:jar:3.25.1:compile
+
+
+we can find all these jar files under $HOME/.m2/repository (sub-directories: based on groupId)
+For eg we can find this jar: com.hibernate:hibernatetools:jar under ~/.m2/repository/com/hibernate/1.0/hibernatetools.jar
+
+since we want to run the SchemaExport class from terminal, we need to set the classpath pointing to all the above jars. inorder to do this let us copy all these jars into one directory of our Filesystem.
+	
+d:\hiberatelibs:/>
+|-com.hibernate:hibernatetools:jar:1.0-SNAPSHOT
++- org.hibernate.orm:hibernate-core:jar:6.5.2.Final:compil
+|  +- jakarta.persistence:jakarta.persistence-api:jar:3.1.
+|  +- jakarta.transaction:jakarta.transaction-api:jar:2.0.
+|  +- org.jboss.logging:jboss-logging:jar:3.5.0.Final
+|  +- org.hibernate.common:hibernate-commons-annotations:j
+|  +- io.smallrye:jandex:jar:3.1.2:runtime
+|  +- com.fasterxml:classmate:jar:1.5.1:runtime
+|  +- net.bytebuddy:byte-buddy:jar:1.14.15:runtime
+|  +- jakarta.xml.bind:jakarta.xml.bind-api:jar:4.0.0:runt
+|  |  \- jakarta.activation:jakarta.activation-api:jar:2.1
+|  +- org.glassfish.jaxb:jaxb-runtime:jar:4.0.2:runtime
+|  |  \- org.glassfish.jaxb:jaxb-core:jar:4.0.2:runtime
+|  |     +- org.eclipse.angus:angus-activation:jar:2.0.0:r
+|  |     +- org.glassfish.jaxb:txw2:jar:4.0.2:runtime
+|  |     \- com.sun.istack:istack-commons-runtime:jar:4.1.
+|  +- jakarta.inject:jakarta.inject-api:jar:2.0.1:runtime
+|  \- org.antlr:antlr4-runtime:jar:4.13.0:runtime
++- org.hibernate.orm:hibernate-ant:jar:6.5.2.Final:compile
+\- com.mysql:mysql-connector-j:jar:8.4.0:compile
+   \- com.google.protobuf:protobuf-java:jar:3.25.1:compile
+	 
+under this directory: hibernatelibs let us create an .bat (windows) or .sh (linux) in which let us set an environment variable pointing to all the jars of this directory
+
+setenv.bat (or) .sh
+--------------------
+use export (linux/mac)
+use set (windows)
+	
+set HIB_LIBS=d:\hibernatelibs
+set HIB_CP=%HIB_LIBS%\hibernatetools-1.0.jar;%HIB_LIBS%\hibernate-core-6.5.2.jar;%HIB_LIBS%\jakarta.persistence-api-3.1.jar;....
+
+we can reuse the above setenv.bat (or) .sh file for setting up the classpath in running all the #3 tools	
+setenv.bat = when we run setenv.bat(or).sh file on the terminal, it creates #2 environment variables HIB_LIBS and HIB_CP. especially HIB_CP env variable will point to all the jar files we specified. So that this variable value can be taken as classpath in running the tools
+
+#1. SchemaExport
+Inorder to use the SchemaExport tools, we need to have an existing project with
+1.1 Entity classes
+1.2 Mapping information
+1.3 Configuration File
+
+once we have the things in place we can use SchemaExport tool for creating new schema or dropping an existing schema by passing hibernate.cfg.xml as an input to the tool
+
+d:\work:/>
+hibernatetools
+|-src
+	|-main
+		|-java
+			|-entity classes 
+		|-resources
+			|-hibernate.cfg.xml
+|-pom.xml
+	[depenencies]
+|-target/
+	
+1. Before navigating to the project directory, let us run setenv.bat(.sh) in creating the environment variables
+2. Navigate to the project root directory
+3. let us run maven build on the terminal window to compile and generate the bytecode using mvn clean verify
+4. Now run the SchemaExport tool for creating the database tables out of the mapping and configuration of our application
+
+d:\work\hibernatetools:/> java -cp %HIB_CP%;target\ org.hibernate.tool.hbm2ddl.SchemaExport
+The SchemaExport tool takes few switches (options) as input as below:
+	--create = export the entity classes/mapping info specified in hibernate.cfg.xml into the database tables
+	--drop   = drop all the entity classes specified in hibernate.cfg.xml from database
+
+If we dont use --create or --drop while running the command, first it drops the existing schema/tables and recreates them by default
+	
+  --text = indicates generate the create/drop sql scripts onto the console, dont perform the operation
+	--output=filename.sql = along with printing the sql scripts onto the console, it writes the sql scripts into the given file
+	--config=hibernate.cfg.xml = the configuration file to be taken as input in reading db and mapping information
+	
+The SchemaExport tool looks for configuration/mapping and entity classes under the classpath, so we need to pass target\ directory also along with jar files locations to the classpath while running the command.
+	
+#2. SchemaUpdate
+If there is no table representing the entity class exists within the database, it creates new table. if the table already exists, then it draws the delta between the mapping and table
+
+if there any new attributes added into the entity class, for those missing columns in table, it will alter table and add columns.
+	
+org.hibernate.tool.hbm2ddl.SchemaUpdate
+	--text
+	--output=file.sql
+	--config=hibernate.cfg.xml
+	
+#3. SchemaValidate
+Verifies whether the mapping info is matching with database table or not. Incase if there are deltas found, it returns errors showing them 
+
+org.hibernate.tool.hbm2ddl.SchemaValidator
+	--text
+	--output=file.txt
+	--config=hibernate.cfg.xml
+
+
+These tools has to be executed by the developer manually, before the application begins execution.
+	For eg..
+	1. SchemaExport = for the first-time when we are running the application to create database schema
+	2. SchemaUpdate = for sub-sequent times while running the application, before running, we need to execute SchemaUpdate to create an additional delta columns if needed
+	3. SchemaValidate = before deploying the application onto production
+	
+These tools are the java classes containing main(...)	{} method inside them upon running them they internally creates SessionFactory, Session and make use of dialect in generating the necessary DDL scripts and executes them on the underlying database for creating, droping, altering or validating the database tables with mapping
+
+At the startup of any hibernate application, the SessionFactory object wil be created, after creating the SessionFactory the execution of the hibernate application begins.
+		
+instead of we running these tools manually, if SessionFactory upon creating by itself, if it can run one/any of these tools automatically in creating/drop/update/validating the schema, we can avoid manually running it outside the application.
+	
+That is where hibernate has provided an property to configure running these tools in hibernate.cfg.xml as 
+hibernate.hbm2ddl.auto can carry #4 different values
+1. create       = SchemaExport --create = drops the tables and creates at startup of the application
+2. create-drop  = SchemaExport --create --drop = drops the tables and creates at startup, and at the end of the application while closing the SessionFactory will drops the tables.
+3. update       = SchemaUpdate (development)
+4. validate     = SchemaValidate (production env) = if there is a delta between mapping and tables, it terminates the application without starting.
+	
+
+	
+	
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

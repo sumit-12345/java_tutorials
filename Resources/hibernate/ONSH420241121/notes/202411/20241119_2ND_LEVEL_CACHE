@@ -1,0 +1,189 @@
+How to generate jpa metamodel classes?
+#1
+We need add the below dependencies aspart of the pom.xml
+<dependency>
+		<groupId>org.hibernate.orm</groupId>
+		<artifactId>hibernate-jpamodelgen</artifactId>
+		<version>6.6.2.Final</version>
+		<scope>provided</scope>
+</dependency>
+<dependency>
+		<groupId>jakarta.xml.bind</groupId>
+		<artifactId>jakarta.xml.bind-api</artifactId>
+		<version>4.0.2</version>
+</dependency>
+<dependency>
+		<groupId>org.glassfish.jaxb</groupId>
+		<artifactId>jaxb-runtime</artifactId>
+		<version>4.0.5</version>
+</dependency>
+<dependency>
+		<groupId>org.antlr</groupId>
+		<artifactId>antlr4</artifactId>
+		<version>4.13.2</version>
+</dependency>
+<dependency>
+		<groupId>org.jboss</groupId>
+		<artifactId>jandex</artifactId>
+		<version>3.1.8</version>
+</dependency>
+<dependency>
+		<groupId>org.jboss.logging</groupId>
+		<artifactId>commons-logging-jboss-logging</artifactId>
+		<version>1.0.0.Final</version>
+</dependency>
+<dependency>
+		<groupId>org.hibernate.common</groupId>
+		<artifactId>hibernate-commons-annotations</artifactId>
+		<version>7.0.3.Final</version>
+</dependency>
+<dependency>
+		<groupId>net.bytebuddy</groupId>
+		<artifactId>byte-buddy-dep</artifactId>
+		<version>1.15.10</version>
+</dependency>
+
+#2 we need to enable annotation-processor by adding processor to the maven compiler plugin as below
+
+<plugin>
+		<artifactId>maven-compiler-plugin</artifactId>
+		<version>3.13.0</version>
+		<configuration>
+				<compilerArguments>
+						<processor>org.hibernate.processor.HibernateProcessor</processor>
+				</compilerArguments>
+		</configuration>
+</plugin>
+
+with the above processor being configured a the java compiler, whenever we compile or run an maven build, the HibernateProcessor reads the jpa annotations and generates jpa metamodel api classes under generatedSources/ directory of our project
+
+build: mvn clean verify
+
+Now we can refer the metamodel api classes in our criteria api code in building Type-safe criteria queries in our application
+
+try {
+		entityManagerFactory = EMFRegistry.getEntityManagerFactory();
+		entityManager = entityManagerFactory.createEntityManager();
+
+		cb = entityManager.getCriteriaBuilder();
+		cq = cb.createQuery(Tuple.class); // empty
+
+		Root<Product> root = cq.from(Product.class);
+		cq.multiselect(cb.count(root.get(Product_.PRODUCT_NO)), root.get(Product_.CATEGORY));
+		cq.groupBy(root.get(Product_.CATEGORY));
+
+		typedQuery = entityManager.createQuery(cq);
+		products = typedQuery.getResultList();
+
+		products.stream().forEach(record -> {
+				System.out.println(record.get(0) + " , " + record.get(1));
+		});
+} finally {
+		if (entityManager != null) {
+				entityManager.close();
+		}
+}
+------------------------------------------------------------------------------------------------------------------------------
+How to enable connection pool within an jpa application?
+We can integrate the jpa (hibernate) application with third-party connection pool vendor libraries like Hikari to enable connection pooling in jpa application. For this 
+	
+#1.	We need to add hibernate-hikaricp	maven dependency
+<dependency>
+    <groupId>org.hibernate.orm</groupId>
+    <artifactId>hibernate-hikaricp</artifactId>
+    <version>6.6.2.Final</version>
+</dependency>
+
+#2. we need to add hikari connection pool configuration in persistence.xml 
+<property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
+<property name="hibernate.hikari.connectionTimeout" value="5000"/>
+<property name="hibernate.hikari.maximumPoolSize" value="10"/>
+<property name="hibernate.hikari.minimumIdle" value="5"/>
+<property name="hibernate.hikari.idleTimeout" value="600000"/>
+<property name="hibernate.hikari.maxLifetime" value="1800000"/>
+<property name="hibernate.hikari.poolName" value="otmspool"/>
+<property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource"/>
+<property name="hibernate.hikari.dataSource.url" value="jdbc:mysql://localhost:3306/hibdb"/>
+<property name="hibernate.hikari.dataSource.user" value="root"/>
+<property name="hibernate.hikari.dataSource.password" value="welcome1"/>
+-------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,347 @@
+Hibernate First-Level Cache
+---------------------------
+What?
+	
+The First-Level cache in Hibernate framework is also called as "session-level" cache, because it is created aspart of the Session object and will be destroyed at the end of the Session object.
+	
+In an hibernate application, we typically create one session object per one business operation, so everytime when we create an session object, Cache also will be created along with that session and kept within the Session object. So the Cache that is created here is not scoped to the Application Level, rather it is scoped to the Session level or operational level
+Hence: it is also called as "operational-level" cache
+
+How does this Cache is being used by the Session?
+For every operation we want to perform on the underlying database, we use Session object within an Hibernate application. The Session object performs every database operation using Write-Behind Cache strategy.
+	
+When performing DML operations:
+The session object always writes the changes into the Cache first (insert/update/delete) and will be propagated to the underlying database at later point of time when we perform commit operation
+
+When perform DQL operations:
+The session object always looks up for the data in Cache-First, if not found, then goes to the underlying database fetches the entity object of data and stores in the cache before returning the data
+
+In this way Session object optimizes the reads/writes of the entity object into the underlying database.
+	
+Let us explore how does session optimizes the reads/writes of the entity objects through this cache:
+
+#1. Read operation (DQL)
+	
+Session session = sessionFactory.openSession(); #along Cache
+Product product1 = session.get(Product.class, 10); #queries the data from database by executing an sql query
+
+Product product2 = session.get(Product.class, 10); 
+#checks in cache for the object with the id, if found returns from cache
+
+(product1 == product2) == true
+product1.hashCode();
+product2.hashCode();
+
+session.close(); # cache is also destroyed
+
+session = sessionFactory.openSession(); #new cache is created
+Product product3 = session.get(Product.class, 10); #queries from database 
+
+#2. Write operation (DML)
+	
+try {
+	product = session.get(Product.class, 10);
+	product.setProductName("32 Inch QLED Television");
+	
+	session.merge(product);
+	
+	product.setDescription("Samsung QLED 32Inch Television with 100k colors");
+	session.merge(product);
+	
+	
+	flag = true;
+}	finally {
+	if(transaction != null) {
+		if(flag) {
+			transaction.commit();
+		}else {
+			transaction.rollback();
+		}
+	}
+}
+------------------------------------------------------------------------------------------------------------------------	
+Why Hibernate has introduced first-level cache?
+To understand the purpose of first-level cache in hibernate framework, first we need to explore the various different data that exists aspart of an application.
+	
+Within an typical application the data can that is used aspart of it can be classified into 3 categories
+1. static data or long-lived data
+2. moderate data
+3. frequently modified data or short-lived data
+
+1. static data or long-lived data
+Within an application there can be some data that seems to be constant/static and fixed in nature like master table data or any other data that is being populated from an external file from the harddisk location (like properties, xml, json etc)
+Any changes to these data would often takes place during the maintainance window of the application (offline) as it effects the overall functionality of the system.
+	
+By nature this data is pretty much finite and doesnt grows during the runtime of the application, and will not changes aswell. So this data is an good candidate for caching aspart of our application, so that we can avoid repeatedly reading the same data within our application
+
+1.1 How long the data should be cached?
+permanently through-out the lifetime of our application
+
+1.2 when do we need to cache this data?
+during the startup of the application itself we can read and store it aspart of the cache because
+	1. the data is finite and fixed in nature
+	2. this data is mandatory inorder to have the application being functional
+	
+2. moderate data
+Within an application there is some data that seems to be constant for certain interval of time and may get modified very rarely.
+For example within an e-commerce application there is lot of data that seems to be moderately modified as below
+	1. seller information = once a seller has registered into the system very rarely the info about the seller would be changed
+	2. product information = very rarely we are going to update the product data
+	3. shipping address of the customers = once created/added into the system, it most of the time remains same
+	
+even thought this data seems to be very rarely undergo changes, but it keeps growing during the runtime of the application. (not static and not fixed)
+	
+since this data undergo changes very rarely, and the chances of reusing the data within the application seems to be very high, it can be considered as a good candidate of caching.
+	
+Even though it can be treated as a good candidate of caching, we need to take #2 aspects into account while considering the data to be cached
+1. whenever the underlying data is modified, the data we stored in the cache becomes stale
+2. since it is runtime data and can be infinite in nature, we cannot cache this data permanently within the cache like static or long-lived data because we quickly go out of memory issues
+
+From the above we can derive the caching requirements for this data as below:
+1. When we should cache this data?
+As the data grows during the runtime of the application and it is infinite in nature we cannot cache during startup.	only on-demand while accessing the data it should be cached.
+	
+2. How long the data should be cached?
+since the data grows over the period of time, caching it permanently will makes the application runs into out of memory issues. so always this data should be cached for time-bounded interval only
+
+There should be strict eviction policy in place like:
+	1. LFU
+	2. MRU
+	3. TTL based policy
+	
+in addition there should be mechanism to detect the change of cached data and should evict it from cache.
+		
+#3. frequently modified data or short-lived data
+In general it is not recommended to cache the data that is frequently undergo changes. Because the efforts of caching such data produces negative results interms of degrading the performance of the system, because each time when there is a change in the data we need to reflect the changes along with source system into the Cache as well.
+		
+even though the changes are reflected in the Cache, not one seems to be reusing the data from it as it frequently undergoes changes.
+		
+But incase if the frequency at which the data is being accessed is more than the interval of change, then it can be considered for caching to improve the performance. since it is frequently modified data, it should be cached to the shorted-interval of time possible.
+
+#5 ms = the data undergoes changes
+#but within the 5 ms of time, there are 1000 requests coming for the same data to be used because of high-customer traffic application (live cricket score/ share market stock prices)
+-------------------------------------------------------------------------------------------------------------------------	
+Why hibernate has introduced and mandatory first-level cache?
+	
+#remember	
+first-level cache is also called as "operational-level" cache which means the data will be cached only to the scope of the operation being performed or carried.
+
+@nature
+always hibernate/jpa queries the record of data from database and returns interms of object. which means the more we query the data, the more number of objects are kept in jvm memory during the runtime of our application
+
+
+@Entity
+@Table(name="emp")
+class Employee {
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	@Column(name="emp_no")
+	int empNo;
+	
+	@Column(name="full_nm")
+	String fullname;
+	
+	@ManyToOne
+	@JoinColumn(name="department_no")
+	Department department;
+	
+}	
+
+@Entity
+@Table(name="dept")
+class Department {
+	@Id
+	@Column(name="department_no")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	int departmentNo;
+	
+	@Column(name="department_nm")
+	String departmentName;
+}		
+		
+We have employees associated with department indicating an employee is working for which department.
+	
+	
+		
+#Let us consider performing an business operation. fetch all the employees and their deparments whose employee gender = female and print them.
+	
+@inside the dao method:
+try {
+	sessionFactory = SessionFactoryRegistry.getSessionFactory();
+	session = sessionFactory.openSession();
+	
+	TypedQuery<Employee> empQuery = session.createQuery("from Employee e where e.gender=:gender", Employee.class);
+	empQuery.setParameter("gender", "female");
+	List<Employee> employees = empQuery.getResultList(); #1000 unique female employees (at one go) 
+		
+	employees.forEach(emp-> {
+		Department dept = emp.getDepartment(); #goes to database executes the query fetches record into object			
+		//print emp and dept (zero) #enhance performance of the application
+	});	
+			
+}finally {
+	if(session != null) {
+		session.close();
+	}
+}
+
+In the above example we are repeatedly ending up in querying the department information for all the employees we fetched. the chances of landing into querying the same department for several employees is same.
+	
+if there is no first-level cache in hibernate, we endup in repeatedly fetching the same department data across the employees and constructs duplicate objects into jvm memory that kills the performance and run into memory issues.
+	
+since the chances of having the department data being modified within the scope of the operation is very less or zero, instead of re-querying	the same data we can reuse it by storing in operationg-scope cache which where hibernate has introduced first-level cache.
+	
+it is the default cache and cannot be disabled, because it breaks the fundamental echo system of the hibernate, which means runs all the hibernate applications into performance and memory issues if we disable.
+	
+
+		
+		
+
+		
+	
+
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	
+	
+	
+	
+	
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	
+	
+
+
+
+
+
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	
+	
+	
+
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

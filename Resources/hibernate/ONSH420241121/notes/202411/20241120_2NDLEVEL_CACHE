@@ -1,0 +1,208 @@
+2nd level caching
+------------------
+The Hibernate or Jpa api are the full implementations of ORM technology. Any ORM technology Frameworks/apis suffers with #2 problems
+1. huge memory consumption = because of graph of objects with their associations will be loaded into the jvm memory, the ORM applications consumes huge amount of jvm memory and might run into out of memory issues as well
+2. poor performance = due to repeated fetching of the data and child associations from the database, it results in poor performance of the application
+
+unless proper measures, tunning parameters and cache in place we cannot handle both of these problems
+
+tunning/proper measures to be taken as below:
+1. use uni-directional associations only
+2. FetchType: Lazy
+when using Lazy we might run into n+1 problem, so make sure we use property @BatchSize to avoid it
+3. Avoid navigating through associations for fetching the child associated objects
+manufacturer.getProducts(); # dont make such calls in navigating through associations
+To query the associated objects always use HQL queries only
+
+4. specify max_fetch_depth in configuration file
+<property name="hibernate.max_fetch_depth">2</property>
+manufacturer -> products -> customers -> orders
+we can control the deptch of child associations to be fetched from the database using max_fetch_depth property
+
+In addition use proper Caching mechanism in avoiding huge consumption of jvm memory and round-trips to the database in fetching the same data
+
+Without proper caching mechanism in-place, any ORM technology application quickly runs into out of memory problems, so it is necessary to implement caching aspart of the hibernate/jpa framework based applications.
+	
+We can categorize the data within an application typically into 3 types
+1. static data or long-lived data
+by nature this data will not be modified during the runtime of the application, any changes to the data will happens during the down-time of application. 
+
+2. moderate data
+rarely undergoes changes. For eg.. master data with our application can be considered as moderate data. Like manufacturer, cities, states, countries, product data etc
+
+3. short-lived data / frequently modified data
+all the transactional data or operational data that gets modified frequently through end-user operations are called "short-lived" data
+
+out of the above 1 & 2 are considered to be good candidate for caching
+
+
+First-level cache
+-----------------
+First-level cache is know as session-level cache or operational-level cache. it is the default cache within an hibernate application and cannot be disabled
+
+How long the data is cached?
+The data is cached to the scope of the operation, which means to the shortest-interval possibly 
+
+Reasons of using first-level cache:
+There is a possibility where we might endup in repeatedly fetching the same data within an scope of the operation that leads to
+	1. creating duplicate objects within the jvm memory
+	2. un-necessary round-trips in fetching the same data from the database
+to avoid such problems in querying and creating objects of same data during the scope of the operation we use first-level cache
+
+Which type of data can be cached in first-level cache?
+Since the cache itself lives for shortest-interval of time, we can cache any type of data into the first-level cache
+
+
+All the data is not short-lived data, within an application as discussed earlier we have long-lived data and moderate data also. The first-level cache helps us in optimizing the memory utilization and performance problems only if we are frequenlty accessing the data within the scope of the operation. But the long-lived data or moderate data should be cached more than the scope of the operation since it is not going to be modified frequently. Otherwise for repeated requests for such data by various different users of the application end-up in re-quering and building duplicate objects into the jvm memory and hinders the performance of the application. To cache such data for longest interval of time possible, the hibernate has introduced 2nd level cache
+
+
+From the above we can understand the scope of the 2nd level cache is for the entire lifetime of the application. If we push all the data of our application into 2nd level cache again the cache itself will run into out of memory. So we need to have proper
+	1. limit of entries in the cache (max entries)
+	2. how long the data should be kept in cache (retention policy)
+	3. eviction algorithms in cleaning up the data from cache (eviction policy)
+	
+The ORM technology providers relies on third-party cache frameworks in creating and storing the data within the 2nd level cache.
+	
+There are lot of third-party cache vendors provided cache libraries in creating and managing the data in cache like
+1. jcache
+2. oscache
+3. swarncache
+4. ehcache
+5. redis
+5. memcache
+etc
+these third-party cache framework supports distributed caching mechanisms in reflecting the caches of a cache across all the instances of the cluster.
+	
+EHCache is considered as very popular opensource cache framework available in java, hibernate has integration with ehcache library.
+	
+EHCache is an distributed cache framework, that helps in maintaining the cache across the nodes of the cluster.
+EHCache 2.x (legacy)
+EHCache 3.10.8 (backward compatibility not there)	
+	
+EHCache 3.x
+------------
+We have different types of data we want to cache with an application which has different cache requirements in maintaining the data in cache. So EHCache let you define cache with configurations associated with it based on type of data we want to store
+
+cache.xml
+----------
+<?xml version="1.0" encoding="utf-8"?>
+<config>
+	<cache-template name="common">
+		<key-type>java.lang.Long</key-type>
+		<value-type>java.lang.String</value-type>
+		<heap unit="entries">200</heap>
+	</cache-template>
+	
+	<cache name="citiescache" uses-template="common"/>
+	<cache name="statescache" uses-template="common"/>
+	<cache name="countriescache" uses-template="common"/>	
+</config>
+
+Test.java
+-----------
+
+Configuration configuration = new XmlConfiguration(this.getClass().getClassLoader().getResource("/cache.xml"));
+CacheManager cacheManager = CacheManagerBuilder.createCacheManager(configuration);
+
+Cache<Long,String> citiesCache = cacheManager.getCache("citiescache", Long.class, String.class);
+citiesCache.put(1, "Hyderabad");
+citiesCache.put(2, "Banglore");
+
+String city = citiesCache.get(1);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

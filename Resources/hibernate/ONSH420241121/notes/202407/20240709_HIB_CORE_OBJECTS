@@ -1,0 +1,192 @@
+1. Configuration
+
+Configuration class acts as an builder in creating the object of SessionFactory. Always the SessionFactory has to be created by pre-populating the configuration and mapping information into it.
+	
+The job of reading the configuration and mapping information and populating it in creating the object of SessionFactory is taken care by Configuration class.
+	
+Since Configuration class is always creating the object of SessionFactory with these configuration/mapping info pre-populated, Configuration is being called as "Builder" for creating the object of SessionFactory.
+	
+1. create the object of Configuration class
+Configuration configuration = new Configuration(); #create the object of the builder class
+	
+2. populate the data into the Builder that we wanted to use in creating the object of actual class
+here Configuration class has provided an configure() method. 
+1. The configure() method upon calling goes to the classpath of the project and looks for "hibernate.cfg.xml" file	
+2. if the file is not found, it throws an runtime exception and terminates the application
+3. if the file is found, reads the configuration information and locates the mapping files based on <mapping resource=""/> and loads them into new Configuration object and returns to us
+
+configuration = configuration.configure();
+
+instead of writing #2 lines of code we can short-cut into one single line as below
+Configuration configuration = new Configuration().configure();
+
+Reference:-
+------------
+Factory pattern:
+Factory classes helps in abstracting/hiding the complexity in creating the object of another class. 
+	
+Builder Pattern:
+Builder classes are also used for abstracting/hiding the complexity in creating the object of another class. Factories always creates the object of another class as empty objects only. But sometimes we want to instantiate the object of other classes with our own supplied values being used in initializing. This can be done by using Builder classes only.
+	
+class A {
+	int i;
+	int j;
+}
+
+class AFactory {
+	public static A createA() {
+		A a = new A(..);
+		return a;
+	}
+}
+A a = AFactory.createA();
+
+class ABuilder {
+	int i;
+	int j;
+	
+	public ABuilder(int i) {
+		this.i = i;
+	}
+	public void setJ(int j) {this.j = j;}
+	
+	public A build() {
+		A a = new A();
+		a.setI(i);
+		a.setJ(j);
+		return a;
+	}
+	
+}
+
+ABuilder abuilder = new ABuilder(10);
+abuilder.setJ(20);
+A a = abuilder.build();
+--------------------------------------------------------------------------------------------------------------------------
+2. SessionFactory
+There are several responsibilities being taken care by the SessionFactory class within an Hibernate application.
+	
+1. SessionFactory acts as an repository in holding the mapping and configuration information within itself. So that it can create the object of Session when requested by populating the same configuration and mapping information
+
+2. SessionFactory acts as an factory for creating the object of Session
+
+3. SessionFactory 
+|- holds the Connection Pool
+	|-
+
+
+SessionFactory sf = new SessionFactory();
+// populate configuration/mapping
+
+	
+Configuration configuration = new Configuration().configure();
+SessionFactory sessionFactory = configuration.buildSessionFactory();
+
+Session session1 = sessionFactory.openSession();
+Session session2 = sessionFactory.openSession();
+
+
+session.get(Address.class, 10);
+1. create a new connection to the database (read: hibernate.cfg.xml)
+2. generate the native sql query to fetch the data against the primary key column by taking the help of dialect (use: mapping info)
+3. create prepared statement
+4. substitute positional parameters
+5. execute the query and get the resultset
+6. map the resultset into object by using GenericMapper (mapping)
+	
+session.get(Address.class, 11);
+1. create a new connection (read: hibernate.cfg.xml)
+2. generate native sql query (use mapping info)
+3. create ps
+4. sustitute params
+5. execute and resultset
+6. map resultset into object (use:mapping info)
+	
+
+	
+	
+1. repository in holding configuration and mapping information
+2. acts as an factory for creating the object of Session
+3. it holds the Connection Pool in creating the object of the Session
+
+SessionFactory  = heavy weight object
+
+	
+SessionFactory
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

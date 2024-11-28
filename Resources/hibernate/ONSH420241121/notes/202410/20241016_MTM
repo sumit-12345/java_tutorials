@@ -1,0 +1,79 @@
+Many-To-Many
+------------
+
+
+@Entity
+@Table(name="trip")
+class Trip {
+	@Id
+	@Column(name="trip_no")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+  int tripNo;
+  String tourName;
+  LocalDate journeyDate;
+  int days;
+  String source;
+  String destination;
+  double cost;
+	
+	@ManyToMany
+	@JoinTable(name="trip_passengers", joinColumns={@JoinColumn(name="trip_no")}, inverseJoinColumns={@JoinColumn(name="passenger_no")})
+  Set<Passenger> passengers; 
+}
+
+@Entity
+@Table(name="passenger")
+class Passenger {
+	@Id
+	@Column(name="passenger_no")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+  int passengerNo;
+  String fullname;
+  int age;
+  String gender;
+  String mobileNo;
+  String emailAddress;
+
+}
+
+
+1. bi-directional
+2. inverse
+3. fetch (n+1 problem)
+4. cascade
+
+hql queries/native sql queries
+criteria api
+2nd level cache
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

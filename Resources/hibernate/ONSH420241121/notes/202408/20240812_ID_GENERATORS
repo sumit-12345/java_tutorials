@@ -1,0 +1,599 @@
+ID Generators
+--------------
+Before exploring id generators, let us understand what is a primary key, and which columns within a table should be considered as primary key columns:
+
+what is a primary key?
+primary key column is used for uniquely identifying a record of data within a table. The primary key column value of any 2 records within the table will be same 
+(or) 
+in other words the primary key column holds unique value among the records of data.
+	
+The purpose of the primary key column is to establish the relationship with other other records of data in another table.
+	
+How do we consider which column in a table should be taken as primary key column?
+Let us consider storing the data of a customers within the super market by designing a table as below:
+
+customer (table) 
+voter_id
+first_nm
+last_nm
+dob
+gender
+mobile_nbr
+email_address
+
+all the columns we defined above falls out of business requirement, which are called business data or natural columns. now out of the above columns we defined, we can take one of the column to be considered as primary key column?
+	
+It looks like initially we can consider voter_id as an primary key column in designing the table, because based on the data we have now, voter_id is unique.
+	
+	
+always natural data tends to change over the period of time, for example in-future the voter_id has been removed by the state govt, we no more can consider voter_id as a primary key for our table and should consider another natural column of the table as an primary key.
+if there is a change in the primary key it not only effects the current table, it effects all the other tables our table is in relationship with and has an cascading effect. Along with this a change in schema model requires a huge amount of rework within the application as well.
+Thus incurring a huge time and cost of implementing the changes.
+	
+So the moral is never consider natural columns of data as primary key columns while designing the schema model.
+	
+So then what columns should be considered as primary key column of a table?
+While designing the data model, it is adviced to take surrogate column as a primary key column for a table. Surrogate column is an additional column we add to a table which is not related to business data. For eg.. in customer table we can add an additional column "customer_id" which carries a unique value for each record of data. 
+	
+customer_id = doesnt have any meaning interms of business or not an natural data, it is just an another column that carries sequence_no for each record of data within the table. There is no impact on this column for any kind of change in the business and hence always your data model stays intight for any change.
+
+customer (table)
+customer_no (pk) 
+first_nm
+last_nm
+dob
+gender
+mobile_nbr (unique) (secondary keys)
+email_address (unique)
+	
+Let us consider we are capturing and registering the users in a super market store, and we consider in the above customer table customer_no (pk) as an surrogate key column. While the customers are registering themself within the application, the customers cannot determine what should be customer_no for him to be unique with other records inorder to register himself into the system.
+	
+as these surrogate key columns doesnt have any meaning in the context of business, the end-user cannot determine what should be the value to be supplied for a surrogate key column, so always the application/system itself should be able generate the value for these surrogate key columns with which the data should be persisted.
+	
+Its the responsibility of the developer in writting appropriate application logic within their program in computing and storing the data for the surrogate key column uniquely.
+	
+Let us explore how can we have the program built for storing the customer data by computing customer_no surrogate column uniquely using java jdbc
+
+class Customer {
+	int customerNo;
+	String firstName;
+	String lastName;
+	Date dob;
+	String gender;
+	String mobileNo;
+	String emailAddress;
+	// accessors
+}
+
+#1 = user
+#2 = user
+
+class CustomerDao {
+	public int saveCustomer(Customer customer) throws Exception{
+		Connection con = null;
+		Statement stmt = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		boolean flag = false;
+		int customerNo = 1;
+		
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection(url, un, pwd);
+			con.setAutoCommit(false);
+			
+			pstmt = con.preparedStatement("insert into customer(customer_no, first_nm, last_nm, dob, gender, mobile_no, email_address) values(?,?,?,?,?,?,?)");
+			
+			stmt = con.createStatement();
+			
+			rs = stmt.executeQuery("select max(customer_no) from customer");
+			if(rs.next()) {
+				customerNo = rs.getInt(1);
+				customerNo++;
+			}	
+			
+			pstmt.setInt(1, customerNo);
+			pstmt.setString(2, customer.getFirstName());
+			pstmt.setString(3, customer.getLastName());
+			pstmt.setDate(4, new java.sql.Date(customer.getDob().getDate()));
+			pstmt.setString(5, customer.getGender());
+			pstmt.setString(6, customer.getMobileNo());
+			pstmt.setString(7, customer.getEmailAddress());
+			
+			pstmt.executeUpdate();
+			
+			flag = true;
+		}catch(ClassNotFoundException | SqlException e) {
+			flag = false;
+			e.printStackTrace();
+			throw e;
+		}finally {
+			if(con != null) {
+				if(flag) {
+					con.commit();
+				}else {
+					con.rollback();
+				}
+			}
+			// close resources
+		}
+		return customerNo;
+	}
+}
+
+for any project: pk is surrogate key only, so always system/application itself should compute or generate the value for surrogate key column with which data should be inserted/stored in the table
+
+1. repeatedly across all the applications every developer has to write complex logic in computing the surrogate key column (boiler-plate logic)
+	
+2. the strategy of generating the surrogate key column should be choose based on the nature of the application like single-threading, multi-threaded or clustered env.
+based on the env, we need to see which strategy results in computing the surrogate key uniquely	and hence complex to implement
+
+3. always the keys are not integers, sometimes the key columns can be alphanuemeric as well, in such case we need to write an different kind of logic in generating the key uniquely
+
+The programmer has to consider all the above factors in determining the algorithm, write programmatic logic in computing the key which makes it quite complex to implement, to overcome the above complexities in computing the surrogate key column value, hibernate has provided id generators.
+--------------------------------------------------------------------------------------------------------------------------
+What are id generators, why do we need to use them?
+id generators are the java classes pre-written with id generation logic provided by the hibernate framework, that is used for generating the surrogate key column values using which the entity class objects are stored into the database table.
+	
+Hibernate <=4
+There are 11 id generators are available which means we have 11 different strategies of generating the surrogate key column is supported by hibernate
+1. assigned
+2. increment (integer, single-threaded)
+3. identity (integer, database supports: AI)
+4. native
+5. sequence (integer, oracle)
+6. hilo       (batch processing)
+7. seq_hilo
+8. guid       (non-nuemeric key column)
+9. uuid
+10. foreign  (self-referencial keys)
+11. select  (using database generated primary keys to be fetched)
+
+but from Hibernate 5 onwards, to align with jpa api, hibernate has deprecated all the 11 id generators and removed in Hibernate 6. So none of the above exists now.
+	
+Hibernate 6 onwards hibernate support jpa api id generators only as below
+1. AUTO
+2. IDENTITY
+3. SEQUENCE
+4. TABLE
+5. UUID
+
+We dont have to instantiate any of these id generators within our application logic, invoke them manually to generate the id and populate into entity object. Because invoking the id generator manually by instantiting them becomes duplicate across all the entity classes while persisting and becomes boiler-plate logic
+
+instead we just need to identify the id generator to be used and configure that in the mapping file of our entity class, so that Session class by looking at which id generator we specified will takes care of instantiating the id generator and invokes to generate the id and populates into our entity object with which the data will be persisted.
+		
+2. IDENTITY
+IDENTITY id generator works for the database that supports auto-increment columns or identity columns. This means the database itself generates the id or primary key column value during the time of storing/inserting the data.
+	
+here IDENTITY id generator will not generate any id, rather it fetches the id that has been generated by database while storing the data and populates into the entity object after persisting.
+	
+3. SEQUENCE
+SEQUENCE id generator works for the databases that supports SEQUENCE datastructure like oracle database.
+sequence in oracle
+
+SEQUENCE is a datastructure supported by oracle database, it generates a unique integer number sequentially upon requesting. So per each table we can create a sequence for generating the corresponding pk column value for the records of the table.
+	
+So while inserting the records into the table
+1. goto corresponding seq of the table and fetch the next_val (next unique no)
+2. using the fetch next_val, use it as pk value of the record and insert into database table
+
+SEQUENCE id generator helps in querying or fetching the nextval from the specified sequence and populates into the entity object, so that session can persist the object with the populated id
+
+1. AUTO 
+When we are working with mysql or ms-sql server database we need to use IDENTITY id generator, but when we are switching from mysql or ms-sql server to oracle database, IDENTITY id generator will not works and we need to switch to SEQUENCE id generator, this incurrs huge amount of time and cost in changing and against to the principle of portability (databases)
+	
+	
+So to help us in ensuring the database portability while using id generators hibernate/jpa has provided AUTO generator.
+	
+AUTO id generator automatically picks up the IDENTITY or SEQUENCE id generator based on the database on which we are running our application
+
+4. TABLE 
+both the IDENTITY and SEQUENCE id generators are specific to the database, where as TABLE id generator works for any type of database. 
+The TABLE id generator uses an table to keep track of the ids that are generated. Per each entity class to generate and hold the id, it creates an record
+In this table we will have #2 columns
+1. pk_column_nm = indicates for which column of the table this pk record is representing
+2. pk_column_val = holds the corresponding pk value for that entity
+
+The TABLE id generator goes to the pk table, queries the pk_column_val based on pk_column_nm, increments the val by 1 and updates the table and returns it as pk to be used for performing insert operation.
+
+customer (customer_no) = customer_no_seq
+product (product_no)   = product_no_seq
+reviews (review_no)    = review_no_seq
+	
+Table: 
+global_pk 
+pk_column_nm   pk_column_val
+customer_no    3
+product_no     10
+review_no      28
+	
+select pk_column_val from global_pk where pk_column_nm = 'customer_no';
++1
+update global_pk set pk_column_val=4 where pk_column_nm = 'customer_no';
+
+
+1. IDENTITY generator
+
+@Entity
+@Table(name="product")
+class Product {
+	@Id
+	@Column(name="product_no")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	int productNo;
+	@Column(name="product_nm")
+	String productName;
+	String manufacturer;
+	String category;
+	double price;
+	// accessors
+}
+	
+Product.hbm.xml
+<hibernate-mapping package="com.idgen.entities">
+	<class name="Product" table="product">
+		<id name="productNo" column="product_no">
+			<generator class="identity"/>
+		</id>
+		<property name="productName" column="product_nm"/>
+		<property name="manufacturer"/>
+		<property name="category"/>
+		<property name="price"/>
+	</class>
+</hibernate-mapping>
+
+hibernate.cfg.xml
+-----------------
+<hibernate-configuration>
+	<session-factory>
+		<property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+		....
+	</session-factory>
+</hibernate-configuration>
+
+
+Test.java
+----------
+Configuration configuration = new Configuration().configure();
+SessionFactory sessionFactory = configuration.buildSessionFactory();
+Session session = sessionFactory.openSession();
+Transaction transaction = session.beginTransaction();
+boolean flag = false;
+
+try {
+	Product product = new Product();
+	// dont populate productNo
+	// populate rest of the attributes
+	
+	session.persist(product);
+	
+	System.out.println(product.getProductNo());	
+	flag = true;
+}finally {
+	// commit or rollback
+	// close session and SessionFactory
+}
+
+
+2. SEQUENCE id generator
+sequence id generator works for oracle database. it fetches the id by querying oracle sequence and populates the id into the entity object for persistency.
+	
+	
+@Entity
+@Table(name="product")
+class Product {
+	@Id
+	@Column(name="product_no")
+	@GeneratedValue(strategy=GenerationType.SEQUENCE)
+	int productNo;
+	@Column(name="product_nm")
+	String productName;
+	String manufacturer;
+	String category;
+	double price;
+	// accessors
+}	
+	
+Product.hbm.xml
+<hibernate-mapping package="com.idgen.entities">
+	<class name="Product" table="product">
+		<id name="productNo" column="product_no">
+			<generator class="sequence"/>
+		</id>
+		<property name="productName" column="product_nm"/>
+		<property name="manufacturer"/>
+		<property name="category"/>
+		<property name="price"/>
+	</class>
+</hibernate-mapping>	
+
+if we dont specify the sequence to be used in generating the id, the sequence generate creates and uses a default sequence called "hibernate_unique_key" and generates the id using it for all the entity classes of our application
+
+product = @GeneratedValue(strategy=GenerationType.SEQUENCE)
+customer = @GeneratedValue(strategy=GenerationType.SEQUENCE)
+
+with the default sequence, the primary key values for the entity classes would not be sequential.
+	
+Instead for each entity	if we want to use an dedicated sequence, then we need to configure Sequence generator with specific details of the sequence to be used for generating the id for that entity and configure it to be used as below.
+	
+	
+@Entity
+@Table(name="product")
+@SequenceGenerator(name="product_seq_gen", sequence="product_no_seq", allocationSize=1) #sequence generator reference	
+class Product {
+	@Id
+	@Column(name="product_no")
+	@GeneratedValue(strategy=GenerationType.SEQUENCE, generator="product_seq_gen")
+	int productNo;
+	@Column(name="product_nm")
+	String productName;
+	String manufacturer;
+	String category;
+	double price;
+	// accessors
+}		
+	
+Product.hbm.xml
+<hibernate-mapping package="com.idgen.entities">
+	<class name="Product" table="product">
+		<id name="productNo" column="product_no">
+			<generator class="sequence">
+				<param name="sequence">product_no_seq</param>
+			</generator>
+		</id>
+		<property name="productName" column="product_nm"/>
+		<property name="manufacturer"/>
+		<property name="category"/>
+		<property name="price"/>
+	</class>
+</hibernate-mapping>	
+	
+3. TABLE generator
+Table generator uses an database table for generating the primary key values for the entity classes. It has #2 columns
+1. primary key column name
+2. primary key column value
+per each entity it stores one record inside the table.
+	
+every time when we persist an entity object, the TABLE id generator queries the record corresponding to the primary key column name, increments the column value by 1, updates the record and uses it as primary key value in persisting the entity object
+
+The Table generator by default looks for a table: hibernate_sequences with #2 columns in it with name as sequence_name and next_val
+
+hibernate_sequences
+--------------------
+sequence_name next_val
+
+The default primary key column name used for an entity is : "default", so with the default strategy all the entities uses the same record in generating the id.
+
+@Entity
+@Table(name="product")
+class Product {
+	@Id
+	@Column(name="product_no")
+	@GeneratedValue(strategy=GenerationType.TABLE)
+	int productNo;
+	@Column(name="product_nm")
+	String productName;
+	String manufacturer;
+	String category;
+	double price;
+	// accessors
+}	
+
+it is recommended to configure the table generator with our own primary key column name, so that each entity has their record with which the key will be generated.
+	
+@Entity
+@Table(name="product")
+@TableGenerator(name="product_table_generator", table="global_unique_keys", pkColumnName="pk_col_nm", pkColumnNameValue="product_no", pkValueColumnName="pk_col_val")	
+class Product {
+	@Id
+	@Column(name="product_no")
+	@GeneratedValue(strategy=GenerationType.TABLE, generator="product_table_generator")
+	int productNo;
+	@Column(name="product_nm")
+	String productName;
+	String manufacturer;
+	String category;
+	double price;
+	// accessors
+}	
+	
+global_unique_keys
+pk_col_nm | pk_col_val
+-----------------------
+product_no  1
+	
+
+5. UUID
+uuid works for primary keys of non-integer type. it generates an unique string of 36 characters in length which is unique across any other string that is generated within this world.
+
+@Entity
+@Table(name="product")
+class Product {
+	@Id
+	@Column(name="product_no")
+	@GeneratedValue(strategy=GenerationType.UUID)
+	int productNo;
+	@Column(name="product_nm")
+	String productName;
+	String manufacturer;
+	String category;
+	double price;
+	// accessors
+}		
+-------------------------------------------------------------------------------------------------------------------------
+How to work with composite primary keys?
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+	
+	
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

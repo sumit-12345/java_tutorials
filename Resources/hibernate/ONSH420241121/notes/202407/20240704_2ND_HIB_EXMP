@@ -1,0 +1,313 @@
+address [table]
+1. address_no
+2. address_line1
+3. address_line2
+4. city
+5. state
+6. zip
+7. country
+
+
+1. Entity class
+	
+package com.she.entities;	
+class Address implements Serializable {
+	private int addressNo;
+	private String addressLine1;
+	private String addressLine2;
+	private String city;
+	private String state;
+	private int zip;
+	private String country;
+	
+	// default constructor
+	// accessors
+	// equals & hashCode	
+}	
+
+2. 
+Mapping File Rules:
+1. always the mapping file should be written under the same package of entity class, so that it can be quickly/easily locatable
+2. The standard convention in writting the file is EntityClassName.hbm.xml, even though it is optional to use .hbm.xml we can write .xml itself
+3. even though we can write multiple entity classes mapping info in one-single mapping file by repeating <class> elements, it is not recommended to write as the mapping file becomes huge and complex to understand/maintain
+
+com/she/entities
+|-Address.hbm.xml
+-------------------
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC - "location">
+<hibernate-mapping package="com.she.entities">	
+	<class name="Address" table="address">
+		<id name="addressNo" column="address_no" />
+		
+		<property name="addressLine1" type="String">
+			<column name="address_line1" sql-type="VARCHAR" size="50" nullable="false" unique="true" />
+		</property>
+		
+		<property name="addressLine2" column="address_line2"/>
+		<property name="city"/>
+		<property name="state"/>
+		<property name="zip"/>
+		<property name="country"/>
+	</class>
+</hibernate-mapping>
+
+id property/primary key column is mandatory, inorder for a table/entity class to be managed through hibernate framework. 
+	(or)
+If there is any table without primary key column, we cannot manage in performing persistence operations on that table using hibernate
+Why? = factor we will learn after sometime
+
+Session = apis are designed to work around primary key, so it is mandatory to have pk column to be managed.
+	
+#3. hibernate configuration
+1. classpath only
+2. hibernate.cfg.xml (filename)
+	
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC - "">
+<hibernate-configuration>
+	<session-factory>
+		<property name="hibernate.connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+		<property name="hibernate.connection.url">jdbc:mysql://localhost:3306/hibdb</property>
+		<property name="hibernate.connection.username">root</property>
+		<property name="hibernate.connection.password">root</property>
+		
+		<property name="hibernate.show_sql">true</property>	
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+		
+		<mapping resource="com/she/entities/Address.hbm.xml" />
+	</session-factory>
+</hibernate-configuration>
+
+
+Session session = ...
+Address address = session.get(Address.class, 1);
+
+session = already holds configuration info and mapping info about the Address class.
+When we are calling get(...) method, we are asking session to fetch only one object of a given entity class from the database this can be only achieved by querying against the primary key, so the second parameter of the get(..) is the primary key column value.
+	
+since session holds all the information about the underlying table for the entity class, it can goto mapping info of the entity and grab table name, primary key column name and other columns of the table and ask dialect to generate sql query specific to the database in querying the data against primary key
+
+select * from address where address_no = ?
+once the query has been build, the session can create statement, susbtitute parameters execute the query and convert into object using GenericMapper and returns the object to us.
+	
+	
+
+What is dialect?
+emp (oracle database) => postgres database
+	
+try {
+	Class.forName(driverClassname);
+	Connection con = DriverManager.getConnection(url, un, pwd);
+	
+	pstmt = con.preparedStatement("select * from emp where emp_nm like ?");
+	pstmt.setString(1, empName);
+	rs = pstmt.executeQuery();
+	
+	while(rs.next()) {
+		// print the records of data	
+	}	
+}	catch(SqlException | ClassNotFoundException e) {
+	// report exception
+} finally {
+	// close all resources
+}
+
+jdbc api
+  |- implementation (driver) => swap/change the driver (classpath)
+	|-database details
+	
+sql queries = sql92 standard (specification)
+almost all the RDMBS databases supports sql92 standard in providing the sql query language aspart of the database. so more or less across all the databases the sql query language looks same.
+	#50 query clauses
+	|-select
+	|-groupBy
+	|-min
+	|-max
+	|-avg
+	|-count
+	|-having
+	
+	
+in addition each database might comeup with additional query clauses than the sql92 standard clauses to support advanced
+querying of data
+	for eg.. oracle database supports/introduced additional query clauses to support advanced querying like
+		1. rank_over
+		2. dense_rank
+		3. rownum
+		4. rowid
+	for eg.. mysql
+		1. with
+		2. limit
+	etc
+	
+from the above we can understand the sql language supported by the databases are not same across, so when we are switching from one database to another database we need to re-write sql queries in our jdbc logic
+
+since the queries has to be modified, the output that is returned out of these queries also will change, so the data extraction and data computation logic we write aspart of the jdbc api also has to be modified.
+		
+From the above switching from one database to another database incurs a huge amount of rework when working with jdbc api.
+		
+Hibernate Framework rescue us from the above problem:
+Hibernate Framework / jpa api works agnostic to the underlying database, we can easily switch from one database to another database vendor, without modifying one single line of code within our application.
+	
+How does hibernate achieve the database portability?
+The sql queries that we write while working with jdbc api is native	sql queries, which means specific to the database, so that when we switch from one database to another, we not only need to modify the queries, we need to even modify the logic sourrounding the queries in extracting/computing the data
+
+To avoid/overcome this problem, hibernate has introduced hql/jpql query language. 
+HQL = Hibernate query language
+JPQL = Java Persistence Query Language
+
+while working with hibernate/jpa api dont write native sql queries, rather write hql/jpql queries only. The hibernate/Jpa api has defined their own query language with pre-defined clauses that seems to be commonly exists across most of the databases.
+	
+oracle sql = no
+mysql sql = no
+
+hql/jpql = execute? = database
+hibernate framework has provided an component called "dialect", which is an translator that translates the hql/jpql queries into database specific queries, so that hibernate can pass them into the underlying database asking it to execute.
+-------------------------------------------------------------------------------------------------------------------------
+Hibernate Core Objects
+1. Configuration
+
+
+
+Factory design pattern
+-----------------------
+Factory classes always helps in creating the object of another class. Sometimes creating the object is quite complex process or job
+
+class A {
+	B b;
+	A(B b){}
+}
+
+class B {
+	C c;
+	B(C c, D d) {}
+}
+
+class C {
+
+}
+
+class AFactory {
+	public static A createA() {
+		C c = new C();
+		B b = new B(c);
+		A a = new A(b);
+		return a;
+	}
+}
+
+class T1 {
+	A a = AFactory.createA();
+}
+
+class T2 {
+	A a = AFactory.createA();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

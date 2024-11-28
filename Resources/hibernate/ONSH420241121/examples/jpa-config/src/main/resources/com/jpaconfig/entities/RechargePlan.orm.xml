@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<entity-mappings xmlns="http://java.sun.com/xml/ns/persistence/orm" version="1.0">
+    <entity class="com.jpaconfig.entities.RechargePlan">
+        <table name="recharge_plan"/>
+        <attributes>
+            <id name="planNo">
+                <column name="plan_no"/>
+            </id>
+            <basic name="planName">
+                <column name="plan_nm"/>
+            </basic>
+            <basic name="description"/>
+            <basic name="circle"/>
+            <basic name="validityDays">
+                <column name="validity_days"/>
+            </basic>
+            <basic name="rechargeAmount">
+                <column name="recharge_amt"/>
+            </basic>
+        </attributes>
+    </entity>
+</entity-mappings>

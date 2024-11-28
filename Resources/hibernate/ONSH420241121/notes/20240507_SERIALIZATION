@@ -1,0 +1,147 @@
+1. human readable
+2. programmable
+	2.1 fixed-width field size format
+	2.2 csv 
+	2.3 xml
+	
+	
+4. Serialization
+
+Java programs always holds the data interms of Objects to perform operation. We cannot persist objects directly onto the File when we are using data representation formats like
+1. Fixed-Width Field size
+2. CSV
+3. XML
+
+so inside the javaprogram we need to write the logic for coverting objects into data representation format or data representation into object format so that it can be in our programs to perform operation.
+
+The developer has to write complex logic in marshalling (object-to-dataformat) and unmarshalling (dataformat to object) the data from program to file and vice versa which takes lot of time for development.
+	
+Instead of we writing the marshalling/unmarshalling logic in persisting the objects of data onto a File, we can use Serialization technic.
+	
+
+Serialization
+---------------
+Serialization is the process of converting the state of an object into bits/bytes, so that the bits/bytes data can be either persisted onto a File or transported over an network/stream. Similarly Deserialization is a technic of building back the object out of the bits/bytes of data we constructed through Serialization technics
+
+hence if we can use Serialization/Deserialization mechanism that is provided by java, we can directly convert objects into bits/bytes and viceverse so that we can directly store them onto a File, without writing complex marshalling/unmarshalling logic.
+	
+	
+advantages:-
+	1. The data that is serialized and stored on the File is in bytes/bytes format, so that no one can open the file and read its contents directly and hence it is secured
+	2. By using serialization mechanism we can avoid write complex programming logic in coverting the data from object to data representation format and vice versa that saves lot of time in building the application
+	3. speed at which we serialize and deserialize the data is very high as it is native support java when compared with we manually converting object into data format.
+	4. There are no File operations being performed, rather deserialize the data into objects, perform operation on the object of data and on the produced object, serialize it back onto the file, thus making it easy to manipulate the data.
+	
+dis-advantages:-
+	1. only programmable format, humans cannot read and understand
+	2. Serialization is an proprietary standard support by java language only. no other language programs can deserialize the data and use it to perform operations. (In-short: data cannot be reused by anyone)
+	3. Not suitable for handling large volumes of data. Because we need to always accumulate objects into Collections and should be serialized/deserialize from the File even we need only one object out of it. Thus impacts the memory utilization in processing the data and performance of the application
+	
+From the above we can understand serialization is not suitable mechanism for persisting large volumes of business data and processing them.
+	
+From our above discussion on persistency and persistency formats we derived few characteristics or requirements in persisting the data on a storage device:
+1. both human and machine readable format
+2. data should be persisted securely
+3. structured and should be defined with semantics 
+4. inter-operable (any operating system platform and any programming language applications should use the data)
+5. should support representing relationships between the data
+6. should support sequential and random access
+7. all the data that we are storing should be validated
+8. support data manipulation operations easily like updating, deleting, inserting, appending etc
+9. should support processing large volumes of data with low memory and cpu
+10. no wastage of storage memory in persisting the data
+
+
+Looks like everyone wants to store and retrieve the data from the Filesystem of the computer, since it is an common requirement for any applications, instead of programmers dealing with complexity of persisting the data by fulfilling the above requirements of persistency, the database management system softwares are introduced.
+	
+database management system is an system software that abstracts the complexity of storing and retrieving the data on the permanent stroage device of the computer, hence the programmers has to write their programs to talk to the database software in storing or retrieving the data.
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

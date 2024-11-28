@@ -1,0 +1,388 @@
+Table: Product
+columns: product_no, product_nm, description, manufacturer_nm, category_nm, price
+
+#1. Inorder to fetch the data from the database table interms of objects we need a corresponding class representing the structure of the database table
+A class that represents the structure of the database table, so that we can use it for storing the records of data interms of objects or object being persisted into the table as record is called "entity class".
+	
+There are certain rules and recommendations to be followed in writing a class, so that it can be called as "entity class".
+1. The class should be declared with attribute corresponding to the columns of the table, and dataType of these attributes should be portable to the column types of the table
+2. The class is recommended to be written by implementing Serializable interface (when using hibernate 2nd level caching)
+3. All the attributes of the class should be generated with accessor (setters/getters) methods	
+4. The class must and should have default or no-args constructor
+5. It is recommended to override equals and hashcode aspart of the entity class
+
+Any class that is specifically written in representing the structure of the database table by following the above rules is called as "entity class".
+	
+package com.fhe.entities;	
+class Product implements Serializable {
+	private int productNo;
+	private String productName;
+	private String description;
+	private String manufacturerName;
+	private String categoryName;
+	private double price;
+	
+	// default (no-args) constructor
+	// accessors (setters & getters)
+	
+	// equals & hashcode (overriden)
+}	
+
+For a given table, how many entity classes we need to write?
+always for a given table, we need to write only one entity class representing the table structure so that any of the records of the data of that table can be stored/represented interms of the object of that class.
+
+in other words, if the table is same, always the class object into which we store the data is same.
+	
+
+#2. Hibernate Mapping
+How to fetch only one record of data from table?
+we can fetch only one record of data from the database table by querying against the primary key, so that we can fetch into only one object
+
+Hibernate Framework dont know the records of data from a table should be mapped into which entity class object, and even it dont know what columns of data should be stored into which attributes of the entity class. 
+	(or)
+Hibernate Framework knows how to store/fetch the data from the Tables interms of objects, but it dont have the information about which table into what class and what columns of data should be stored in which attributes?	
+	
+	
+since the programmer has created the entity class representing the table and columns, it is the responsibility of the programmer to provide such information describing tables/entity class and columns/attributes as an input to Hibernate. That is where we need to provide mapping information to the Hibernate Framework.
+	
+How to provide the mapping information as an input to Hibernate Framework?
+Hibernate developers has defined the standard format/structure to be used in defining the mapping information, so that they can understand and use it.
+	
+The Hibernate Mapping information should be written in XML format only. This XML file has been defined with fixed structure/elements that should be followed in writing the File.
+	
+There are certain rules/recommendations to be followed while writing this mapping file:
+1. It is recommended to write hibernate mapping file within the same package of your entity class, so that we can quickly locate for a given entity class where is the corresponding mapping file
+	
+2. The name of the mapping file should be same as classname
+For eg.. if the entity classname is Product, then the mapping file should be written as Product.xml (including matching case)
+	
+3. it is recommended to write the extension of the mapping file as .hbm.xml even though it is optional
+optional: Product.hbm.xml 
+because .hbm.xml indicates this xml file carries hibernate mapping information (hbm) Product.xml
+
+com/fhe/entities
+|-Product.hbm.xml
+-------------------
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-mapping PUBLIC "location.dtd">
+<hibernate-mapping>
+	<class name="com.fhe.entities.Product" table="product">
+		<id name="productNo" columns="product_no"/>
+		<property name="productName" column="product_nm"/>
+		<property name="description" column="description"/>
+		<property name="manufacturerName" column="manufacturer_nm"/>
+		<property name="categoryName" column="category_nm"/>
+		<property name="price" column="price"/>				
+	</class>
+</hibernate-mapping>
+
+#3. In order for the hibernate to query the data from the table and return interms of object we need to provide database information as an input, so that it connect to the database and query the data from the table.
+	
+In addition to the database details, we can configure additional properties pertaining to the hibernate framework in tunning the framework to be used, all this information needs to be specified aspart of another configuration file which is called "Hibernate Configuration" file.
+	
+Hibernate configuration file is also an xml file, and should be written based on the standard format defined by the hibernate people aspart of hibernate configuration dtd
+
+There are few rules we need to follow in writing the hibernate configuration file as below:
+1. It is recommended to place the hibernate configuration file directly under the classpath of the application
+2. The hibernate configuration file should be given with a default name or standard name as "hibernate.cfg.xml" only. here cfg stands for configuration which indicates its an configuration file and is recommended to be written even though it is not mandatory.
+	
+hibernate.cfg.xml
+-------------------
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC "location.dtd">
+<hibernate-configuration>
+	<session-factory>
+		<property name="connection.driver_class">com.mysql.cj.jdbc.Driver</property>
+		<property name="connection.url">jdbc:mysql://localhost:3306/db</property>
+		<property name="connection.username">root</property>
+		<property name="connection.password">root</property>
+		
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+		<property name="hibernate.show_sql">true</property>
+		
+		<mapping resource="com/fhe/entities/Product.hbm.xml"/>
+	</session-factory>
+</hibernate-configuration>
+----------------------------------------------------------------------------------------------------------------------
+
+class Test {
+	public static void main(String[] args) {
+		Configuration configuration = new Configuration().configure(); #classpath: hibernate.cfg.xml
+		SessionFactory sessionFactory = configuration.buildSessionFactory();
+		Session session = sessionFactory.openSession();
+
+		Product product = session.get(Product.class, 1);
+		sop(product);
+		
+		session.close();
+		sessionFactory.close();
+	}
+}
+
+
+There should be some intelligent class (similar to our PersistenceManager) that must be provided by Hibernate Framework, that is capable of performing persistence operations (save, update, delete, query) based on the mapping and configuration information we provided. Hibernate Framework has provided such an intelligent class called "Session"
+	
+Session class = is intelligent enough in performing persistence operations based on mapping/configuration information we provided.
+	
+	
+hibernate configuration file
+1. under the classpath
+2. hibernate.cfg.xml 
+
+hibernate.cfg.xml
+------------------
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE...>
+<hibernate-configuration>
+	<session-factory>
+		<property name="connection.driver_class"></property>
+		<property name="connection.url"></property>
+		<property name="connection.username"></property>
+		<property name="connection.password"></property>
+		
+		<property name="hibernate.dialect">org.hibernate.dialect.MySQLDialect</property>
+		<property name="hibernate.show_sql">true</property>
+		
+		<mapping resources="com/fhe/entities/Product.hbm.xml"/>
+	</session-factory>
+</hibernate-configuration>
+
+
+Session is an:
+Intelligent class (PersistenceManagement): provided by Hibernate Framework, that uses
+	1. Mapping Info (GenericMapper)
+	2. Entity class
+	3. Configuration Info (Connection)
+in querying and retrieving the records of data from table interms of objects directly
+
+1. Session session = new Session(); #empty
+There is no use of creating the Session object as above, because it is empty. Unless Session object has mapping and configuration information, it cannot perform persistency operation. 
+		
+So we should create the object of Session by passing mapping and configuration information as an input.
+		
+2. 
+From this we can understand creating the object of Session seems to be complex job since we need to read mapping/configuration files, parse them and populate as an input in creating the Session. 
+To help us in creating the Session object quickly we need an Factory class that is where SessionFactory should be used.
+	
+SessionFactory sessionFactory = new SessionFactory(); #empty
+
+we cannot endup in creating SessionFactory as empty, we need to populate configuration/mapping information as an input, which can be done by using Configuration class
+	
+3. Configuration
+Configuration class knows how to read the Configuration information
+	
+
+Configuration configuration = new Configuration().configure();
+Here we are creating Configuration class object and calling configure() method on it. The configure() method goes to the classpath of the application and looks for "hibernate.cfg.xml", from which it reads configuration info and mapping information and loads and returns an Configuration object to us.
+	
+	
+SessionFactory sessionFactory = configuration.buildSessionFactory();
+Session session = sessionFactory.openSession();
+
+Product product = session.get(Product.class, 1);
+session.close();
+sessionFactory.close();
+-------------------------------------------------------------------------------------------------------------------------
+
+intellij = community edition (free)
+project: maven
+java: 17+
+	
+What is the structure of the maven java project?
+	
+first-hibernate (project root directory)	
+|-src
+  |-main
+		|-java
+		|-resources
+	|-test
+		|-java
+		|-resources
+|-target
+	|-classes (classpath location of the project)
+		|-*.class
+	|-*.jar|war|ear
+|-pom.xml
+
+
+What is the classpath?
+classpath = CLASSPATH is an environment variable, that points to the directory location where the class files can be located. So that javac or java can use those classfiles in compiling or running the java program.
+	
+What is the sourcecode?
+	
+
+
+
+
+
+
+src/main/java = java sourcecode should be kept
+src/main/resources = non-java sourcecode should be kept
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

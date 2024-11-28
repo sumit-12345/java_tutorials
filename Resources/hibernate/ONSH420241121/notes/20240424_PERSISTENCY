@@ -1,0 +1,149 @@
+Hibernate is an persistency technology framework. So, inorder to understand what is hibernate framework, first we need to learn what is persistency?
+	
+What is Persistency?
+Persistency is all about storing/writing the data permanently on a storage medium, so that it can be reused at later point of time.
+	
+Why do we need Persistency?
+The business house always generates the data which is called "business data". By nature the business data is long-lived data which means that lives for longer amount of time. The business data has to be reused for performing various different operations in future, unless such data is being persisted permanently we cannot reuse the data to perform operations on it, so we need to persist the data
+
+How to persist the data?
+1.
+The business owner can capture the information/data that flows aspart of the business and store it permanently by writing them aspart of the books which are ledgers or bill books etc. This way the data is persisted permanently and can be referred or reused at later point of time
+
+There are lot of problems in persisting the data on the physical medium or books:
+1. The information that is stored/written aspart of the book/paper has wear and tear and over the period of time the information will be vanished or get destroy 
+2. The information that is recorded on the pysical paper may not be legitimate to others, as different people has different handwriting and may not be understood by others
+3. the information writte on the paper/book is accessible to everyone and hence it is not secured
+4. in the event of destroy/lost there is no way to recover it (because we dont have backup)
+5. navigating and identifying the record of data out of the pages in the book is very difficult and takes huge amount of time
+
+The data that we have captured and written the physical medium (paper/book) is being used for performing various different types of operations, through software programs (running on a computer). Unless this data is being fed as an input to the computer program it will not be able to perform computation operation, so using this data in carrying operations through the computer programs has quite a number challenges:
+1. The efforts of capturing the data on the physical medium and passing it as an input to the software programs to perform operations is doubled. each time we want to perform a computation operation on the data, we need to manually read the data from the book and fed it as an input to the computer program through input devices like keyboard etc
+
+2. The time required for reading the data from physical medium and passing it as an input to the computer program is very high
+3. The accuracy of posting this data as an input to the computer is very less due to which always we endup in performing wrong calculations
+
+since we always use this data aspart of the software programs to perform various different operations, instead of storing/writing the data on the physical medium if we can some how some way capture and store this data on the computer storage device itself permanently, we can have software programs designed to read the data directly from the permanent storage device to perform operations rather than repeatedly entering the data to the program
+
+
+That is where the need for persisting the data on the permanent storage devices of the computer system itself has been introduced which is called "Persistency"
+	
+How to persist the data on the permanent storage devices of the computer?
+To permanently store the data on the permanent storage devices of the computer, the operating systems has introduced File System technics like
+1. FAT32
+2. NTFS
+3. EXT4
+etc
+
+These Filesystem technics allows us to store and access the data interms of Files and Folders on the storage device of the computer.
+	
+There are 2 formats of persisting the data on the File System of the computers are there
+1. Human readable data
+The data is captured and stored in a way humans can understand and easily use the data that is stored on the computer. Few examples are 
+1.1 pdf
+1.2 excel
+1.3 word document
+1.4 powerpoint
+etc
+	
+2. Programmable data format
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+

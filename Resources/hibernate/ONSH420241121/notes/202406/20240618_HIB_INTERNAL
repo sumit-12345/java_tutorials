@@ -1,0 +1,378 @@
+Let us explore how can we access the data from database table interms of objects without using hibernate framework:
+
+product [table]: assumption=all the columns are varchar2 (string) only
+product_no
+product_nm
+description
+category_nm
+manufacturer_nm
+price
+
+
+inorder to query the data from the product[table] and access the data interms of objects in our java program, we need an java class representing the structure of the database table. each record in the table is represented by one object of the class
+	
+class Product {
+	private String productNo;
+	private String productName;
+	private String description;
+	private String categoryName;
+	private String manufacturerName;
+	private String price;
+	
+	public void setProductNo(String productNo) {
+		this.productNo = productNo;
+	}
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
+	// accessors
+}
+
+
+class ProductAccessor {
+	public List<Product> getAllProducts() throws SqlException {
+		List<Product> products = null;
+		
+		String sql = "select product_no, product_nm, description, category_nm, manufacturer_nm, price from product";
+		products = (List<Product>) PersistenceManager.select(sql, Product.class, Collections.emptyMap());
+		
+		return products;
+	}
+	
+	public List<Product> findProductsByManufacturerName(String manufacturerName) {
+		List<Product> products = null;		
+
+		String sql = "select product_no, product_nm, description, category_nm, manufacturer_nm, price from product where manufacturer_nm = ?";
+
+		Map<Integer, Object> params = new HashMap();
+		params.put(1, manufacturerName);
+
+		products = (List<Product>) PersistenceManager.select(sql, Product.class, params);
+		return products;
+	}
+	
+	public int saveProduct(Product product) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		
+		try {
+			con = ConnectionManager.newConnection();
+			pstmt = con.preparedStatement("insert into product(product_no, product_nm, description, manufacturer_nm, category_nm, price) values(?,?,?,?,?,?)");
+			pstmt.setString(1, product.getProductNo());
+			pstmt.setString(2, product.getProductName());
+			pstmt.setString(3, product.getDescription());
+			pstmt.setString(4, product.getManufacturerName());
+			pstmt.setString(5, product.getCategoryName());
+			pstmt.setString(6, product.getPrice());
+			
+			int r = pstmt.executeUpdate();			
+			return r;
+		}catch(ClassNotFoundException | SqlException e) {
+			throw e;
+		}finally {
+			// close all resources
+		}
+	}
+}
+
+address [table]
+address_no
+address_line1
+address_line2
+city
+state
+zip
+country
+
+Let us create a java class representing the structure of address[table] so that we can hold the data of the table interms of objects.
+	
+class Address {
+	String addressNo;
+	String addressLine1;
+	String addressLine2;
+	String city;
+	String state;
+	String zip;
+	String country;
+	// accessors
+}	
+
+class AddressAccessor {
+	
+	public List<Address> findAddressByCity(String city) throws SqlException {
+		List<Address> addresses = null;
+		
+		
+
+		String sql = "select address_no, address_line1, address_line2, city, state, zip, country from address where city = ?";
+		Map<Integer, Object> params = new HashMap();
+		params.put(1, city);
+		
+		addresses = (List<Address>) PersistenceManager.select(sql, Address.class, params);
+		return addresses;
+	}
+}
+
+In the above code, we are writing the code for creating the Connection object across all the accessor classes and their methods, so that it is being duplicated. Instead we can write one class that takes care of creating and returning the Connection so that it can be reused across all the Accessors.
+	
+Note: In an Application per each operation we perform on the underlying database, we need one new object of the Connection. Connection should not be reused across the operations as we need to isolate the transactionality across the business operations.
+	
+since each business operation should be carried in its own isolated transaction, we need one new object of the connection per business operation.	
+	
+class ConnectionManager {
+	private final static String driverClassName;
+	private final static String url;
+	private final static String un;
+	private final static String password;
+	
+	static {
+		Properties props = new Properties();
+		props.load(new FileInputStream(new File("d:\\db.properties")));
+		
+		driverClassName = props.getProperty("db.driverClassName");
+		url = props.getProperty("db.url");
+		un = props.getProperty("db.username");
+		password = props.getProperty("db.password");	
+	}
+	
+	public static Connection newConnection() throws ClassNotFoundException, SqlException {
+		Connection con = null;
+		
+		
+		Class.forName(driverClassName);
+		con = DriverManager.getConnection(url, un, password);
+		con.setAutoCommit(false);	
+		
+		return con;
+	}
+}	
+
+d:\\db.properties
+-----------------
+db.driverClassName=com.mysql.cj.jdbc.Driver
+db.url=jdbc:mysql://localhost:3306/db
+db.username=root
+db.password=root
+
+
+Mapper class = Mapper class takes care of reading the data from a resultset record and maps into corresponding object format. For each table to map the records of data into corresponding class object we need to write one Mapper class
+	
+class ProductMapper {
+	public static Product mapResultSetToProduct(ResultSet rs) {
+		Product product = new Product();
+		product.setProductNo(rs.getString(1));
+		product.setProductName(rs.getString(2));
+		product.setDescription(rs.getString(3));
+		product.setCategoryName(rs.getString(4));
+		product.setManufacturerName(rs.getString(5));
+		product.setPrice(rs.getString(6));
+		return product;
+	}
+}	  
+		
+
+class AddressMapper {
+	public static Address mapResultSetToAddress(ResultSet rs) {
+		Address address = new Address();
+		address.setAddressNo(rs.getString(1));
+		address.setAddressLine1(rs.getString(2));
+		address.setAddressLine2(rs.getString(3));
+		address.setCity(rs.getString(4));
+		address.setState(rs.getString(5));
+		address.setZip(rs.getString(6));
+		address.setCountry(rs.getString(7));
+		return address;
+	}
+}
+
+
+class GenericMapper {
+	public static Object mapResultSetToObject(ResultSet rs, Class<?> clazz) {
+		Object obj = null;
+		Properties colToAttrProps = null;
+
+		
+		obj = clazz.newInstance();
+		colToAttrProps = PropertiesLoader.loadProps(clazz.getClassName() + ".properties");
+		
+		
+		colToAttrProps.forEach((columnName, attributeName)-> {
+			String columnValue = rs.getString(columnName);
+			String setterMethod = "set" + attributeName.charAt(0).toUpperCase() + attributeName.subString(1, attributeName.length);
+			Method method = clazz.getDeclaredMethod(setterMethod, new Class<?>[]{String.class});
+			method.invoke(obj, new Object[]{columnValue});
+		});
+		
+		return obj;
+	}
+}
+
+
+
+-------------------------------------------------------------------------------------------------------------------------------
+Explanation of GenericMapper:
+1. create the object of the given class
+2. read the data from the ResultSet record and populate into object
+	
+	
+
+Properties colToAttrProps = new Properties();
+colToAttrProps.put("product_no", "productNo");
+colToAttrProps.put("product_nm", "productName");
+colToAttrProps.put("manufacturer_nm", "manufacturerName");
+colToAttrProps.put("description", "description");
+colToAttrProps.put("price", "price");
+
+GenericMapper.mapResultSetToObject(rs, Product.class, colToAttrProps);
+
+
+class A {
+	void m1(int i) {
+		
+	}
+	void m1(int i, int j) {
+		
+	}
+	
+}
+
+A a = new A();
+a.m1();
+
+Object obj = new A();
+Object is an super class for all the classes in Java, so we can always assign derived class objects into base class reference variable
+	
+	
+obj.m1(); // no
+obj = is not an concreate reference of A, it is there reference of Object type. So we can only see the attributes/methods of Object class using the obj reference we cannot access A class attributes/methods using obj
+
+
+
+Object r = obj.method(10, 20);
+
+1. we dont have concreate reference of the object to invoke method on the class using the object
+how to invoke the method of a class using generic reference of the object?
+	
+Method method = A.class.getDeclaredMethod("m1", new Class<>{Integer.class});
+Object ret = method.invoke(obj, new Object[]{10});
+-------------------------------------------------------------------------------------------------------------------------------
+Product.properties
+------------------
+product_no=productNo
+product_nm=productName
+description=description
+manufacturer_nm=manufacturerName
+category_nm=categoryName
+price=price
+
+
+Address.properties
+------------------
+address_no=addressNo
+address_line_1=addressLine1
+address_line_2=addressLine2
+city=city
+state=state
+zip=zip
+country=country
+
+
+class PropertiesLoader {
+	public static Properties loadProps(String propsFile) {
+		Properties props = new Properties();
+		props.load(new FileInputStream(new File(propsFile)));
+		return props;
+	}
+}
+
+
+// persistence manager is a component that takes care of performing persistency operations
+class PersistenceManager {
+	public static List<Object> select(String sql, Class<?> clazz, Map<Integer, Object> params) {
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		List<Object> list = null;
+		Object obj = null;
+		
+		try {
+			con = ConnectionManager.newConnection();
+			pstmt = con.preparedStatement(sql);
+			
+			params.forEach((pos, paramValue) {
+				pstmt.setString(pos, paramValue);
+			});
+			rs = pstmt.executeQuery();
+			
+			list = new ArrayList<>();
+			while(rs.next()) {
+				obj = GenericMapper.mapResultSetToObject(rs, clazz);
+				records.add(obj);
+			}
+								
+		}catch(ClassNotFoundException | SqlException e) {
+			e.printStackTrace();
+			throw e;
+		}finally {
+			if(rs != null) {
+				rs.close();
+			}
+			if(stmt != null) {
+				stmt.close();
+			}
+			if(con!=null) {
+				con.close();
+			}
+		}
+		return list;
+	}
+	
+	
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	

@@ -1,0 +1,175 @@
+hql/jpql = powerful query language, but it is not as powerful as native sql queries. Because jpql/hql has been designed to have only the clauses that are commonly supported by all the database, so it may not have complex/advanced query clauses that are supported by few databases.
+	
+
+So from the above we can understand, sometimes we need fallback to the native sql queries if we wanted to query the data based on complex query requirements.
+	
+Fortunately jpa api supports running native sql queries aspart of jpa api, so we dont need to use jdbc api to executive native sql queries.
+	
+	
+	
+1. native sql queries
+Query query = entityManager.createNativeQuery("select p.product_no, p.product_nm, p.category_nm, p.price from product p");
+List<Object[]> records = query.getResultList();
+
+for(Object[] record : records) {
+	sop(record[0] + "," + record[1]+ "," +record[2]+","+ record[4])
+}
+
+2. Named native query
+
+@NamedNativeQueries({
+        @NamedNativeQuery(name = "productsByCategory", query = "select p.product_no, p.product_nm, p.category, p.price from product p where p.category like :category")
+})
+public class Product implements Serializable {
+	@Id
+	@Column(name = "product_no")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int productNo;
+	@Column(name = "product_nm")
+	private String productName;
+}
+
+allProductsQuery = entityManager.createNamedQuery("productsByCategory");
+allProductsQuery.setParameter("category", category);
+
+rows = allProductsQuery.getResultList();
+rows.stream().forEach(row -> {
+		System.out.println(row[0] + " , " + row[1] + " , " + row[2] + " , " + row[3]);
+});
+
+Result Mapping
+--------------
+Always when we execute the native sql queries it returns List Object[]. If you want to retrieve the query result as a different data structure (object), there are 3 ways of mapping the result into object type
+
+1. we can map each record of the query into entity mapping
+2. @SqlResultSetMapping = to map the record into arbitary object
+3. ResultTransformer (Hibernate Specific) (deprecated and doesnt exists)
+	
+#1. map each record of the query into entity mapping
+	
+Query q = entityManager.createNativeQuery("select p.product_no, p.product_nm, p.description, p.category, p.price from product p", Product.class);
+List<Product> products = q.getResultList();
+
+
+#2. @SqlResultSetMapping to map record into arbitary object
+
+
+@SqlResultSetMapping(
+	name="BasicProductMapping",
+	classes=@ConstructorResult(
+		targetClass=BasicProduct.class
+		columns = {
+			@ColumnResult(name="product_no", type=Integer.class),
+			@ColumnResult(name="product_nm", type=String.class),
+			@ColumnResult(name="price", Double.class)
+		}
+	)
+)
+public class Product implements Serializable {
+	@Id
+	@Column(name = "product_no")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int productNo;
+	@Column(name = "product_nm")
+	private String productName;
+}
+
+class BasicProduct {
+	private int productNo;
+	private String productName;
+	private double cost;
+	
+	public BasicProduct(int productNo, String productName, double cost) {}
+	
+	// accessors
+}
+
+Query q = entityManager.createNativeQuery("select p.product_no, p.product_nm, p.price from product p", "BasicProductMapping");
+List<BasicProduct> products = q.getResultList();
+-------------------------------------------------------------------------------------------------------------------------------
+How to execute stored procedure in jpa api?
+	
+1. create an stored procedure in mysql server database as below.
+	
+CREATE DEFINER=`root`@`localhost` PROCEDURE `find_product_price`(IN product_no INT,
+								OUT price DOUBLE)
+BEGIN
+	SET price = (select p.price from product p where p.product_no = product_no);
+END
+
+2. 
+
+@Entity
+@Table(name="product")
+@NamedStoredProcedureQueries(
+	{
+		@NamedStoredProcedureQuery(name="findProductPrice", procedureName="find_product_price", 
+															resultClasses={Double.class},
+															parameters={
+																@StoredProcedureParameter(name="product_no", type=Integer.class, mode=ParameterMode.IN),
+																@StoredProcedureParameter(name="price", type=Double.class, mode=ParameterMode.OUT)
+															})
+	}
+)	
+public class Product implements Serializable {
+	@Id
+	@Column(name = "product_no")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int productNo;
+	@Column(name = "product_nm")
+	private String productName;
+}	
+	
+	
+StoredProcedureQuery findProductPriceProcedureQuery = entityManager.createNamedStoredProcedureQuery("findProductPrice");
+findProductPriceProcedureQuery.setParameter("product_no", 1);
+List<Double> out = findProductPriceProcedureQuery.getResultList();
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

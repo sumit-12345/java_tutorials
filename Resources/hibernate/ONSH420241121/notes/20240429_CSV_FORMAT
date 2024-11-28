@@ -1,0 +1,105 @@
+There are 2 formats in which we store the data on a File
+1. Human understandable format
+2. Programmable format
+
+
+2. Programmable format
+Programmable format means we should store/capture the data on the File in such a way it can parsed, interpreted by the programs to perform the operation.
+There are several programmable formats are there
+1. Fixed Width Field size format
+all the fields of data we persist on a File is defined with fixed field sizes based on which the data is being persisted on the File.
+
+advantages:-
+	1. both human and machines can read the data
+	2. allows us to read the data sequentially and randomly as well
+	3. performing all the data operations like adding, deleting and updating the data is quite easy when compared with other formats of storing the data
+	4. we can build programming logic effectively in parsing, interpreting the data based on the Field sizes
+	
+dis-advantages:-
+	1. huge amount of memory will be wasted by storing blank spaces to accomodate fixed field sizes
+	2. difficult to estimate the exact field sizes, requires historical data or knowledge on the business being conducted
+	3. if the field sizes are changed, then we need to rewrite all the data that has been stored already on the File to new field sizes which is very difficult job
+	4. along with that we need to rewrite the logic within the programs to process the data based on the new field sizes defined
+	
+since business data is very huge in nature, the more we store the data, the more amount of storage space is wasted, and is not recommended for storing large volumes of data
+
+2. csv (comma separated value)
+all the fields of data we are storing are separated or delimited by using ","	comma between the fields. Now the fields are not given fixed width, instead those are separated by "," so that programs has to interpret the fields based on the "," and field position
+
+sales.txt
+---------
+1,steve,04/29/2024,3,230
+2,mathew,04/29/2024,5,530
+3,paul,04/29/2024,4,289
+4,peter,s,04/29/2024,78,1500
+	
+Let us understand how to process the data within this file using the program:
+
+class DaySalesCalculator {
+	public static void main(String[] args) {
+		double totalSales = 0;
+		
+		BufferedReader reader = new BufferedReader(new FileReader(new File("d://sales.txt")));
+		while((String line = reader.readLine()) != null) {
+			String[] fields = line.split(",");
+			double billAmount = Double.parseDouble(fields[4]);
+			totalSales+=billAmount;			
+		}
+		System.out.println("Total Sales in Store  :" + totalSales);
+	}
+}
+
+In the above program:
+1. we have read the data line by line
+2. split by "," to break the data into fields
+3. based on the index position we identify the field and process the data
+
+advantages:-
+	1. The data is both human and machine readable
+	2. No wastage of the memory as the fields are delimited by "," rather than fixed field sizes. So we dont need to fill the fields with blank spaces
+	3. No historical data or prior business knowledge is needed to design the field sizes in storing the data on the File. because here we dont rely on field sizes rather we identify the fields based on ",", So storing the data is very easy.
+	4. Since the fields are identified based on "," there is no restriction over the Field sizes unlike Fixed width field size formats, so that we dont need to worry about rewriting the data or modifying the programming logic in case change in field sizes.
+	
+dis-advantages:-
+	1. only sequential access is supported, but no random access is possible
+	2. if the actual data we are storing itself has "," then the data would be interpreted wrongly and results in in-correct business operation. 
+	3. the boundaries of the data may not be interpreted or extracted properly if the data being stored is incorrect
+	4. since there is no semantics attached with the data, it is hard to interpret and process the data.
+	5. performing file operations like inserting, updating and deleting the data is very difficult.
+		
+since we are storing the data permanently to perform business operations, which requires highest accuracy if we store the data in csv format we cannot guarantee the accuracy of the business operations, because there is chance of mis-interpretation of the data due lack of semantics and structure (boundary)
+	
+	
+3. eXtensible markup language (XML)	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

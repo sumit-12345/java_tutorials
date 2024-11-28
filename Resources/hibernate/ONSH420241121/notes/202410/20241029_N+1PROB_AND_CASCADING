@@ -1,0 +1,524 @@
+How does FetchType.LAZY works?
+	
+@Entity
+@Table(name = "product")
+class Product {
+	@Id
+	@Column(name = "product_no")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int productNo;
+	@Column(name = "product_nm")
+	private String productName;
+	private String description;
+	private String category;
+	private double price;
+	@ManyToOne
+	@JoinColumn(name = "manufacturer_no", nullable = false)
+	private Manufacturer manufacturer;
+}
+
+@Entity
+@Table(name = "manufacturer")
+class Manufacturer {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "manufacturer_no")
+	private int manufacturerNo;
+	@Column(name = "business_nm")
+	private String businessName;
+	@Column(name = "established_dt")
+	private LocalDate establishedDate;
+	@Column(name = "contact_no")
+	private String contactNo;
+	@Column(name = "email_address")
+	private String emailAddress;
+	@OneToMany(mappedBy = "manufacturer")
+	private Set<Product> products;	
+	
+}
+
+
+Manufacturer manufacturer = entityManager.find(Manufacturer.class, 10);
+manufacturer.getProducts();  // query the data from database
+
+When we request the Manufacturer entity object based on pk, the jpa/hibernate only queries the data from manufacturer table and returns the entity object, it will not queries for associated products Set. Because by default collection associations are FetchType.LAZY
+
+When we tried accessing the associated objects using its getter, then only the child objects are queried and returned from the database table.
+	
+If we look at the getProducts() getter method, it doesnt have any logic written in querying the data from the database, so how when we invoke manufacturer.getProducts() is fetching the data from database?
+	
+To support LAZY initialization of collection type associations the hibernate/jpa does the below things
+1. entityManager.find(Manufacturer.class, 10); = this executes an query on the manufacturer table against the pk value supplied and wraps the record of data into Manufacturer object
+
+2. since the Set<Product> products are not queries from the database to support LAZY initialization or loading of these child associated objects hibernate/jpa introduced Persistent collections
+
+Hibernate/Jpa has provided their own implementations of java collection classes (List, Set, Map) which are PersistentList, PersistentSet, PersistentMap
+
+Here while wrapping the data of the record into Manufacturer entity object, hibernate/jpa will instantiate appropriate persistent collection implementation based on associated object, in this case it is PersistentSet and wraps pk (manufacturerNo: 10) and session object into it and assigns to the Set<product> products attribute.
+	
+	
+Set<Product> products = manufacturer.getProducts();	// PersistentSet implementation
+when we tried iterating over this collection, the PersistentSet implementation logic will query the data from database by running an sql query using manufacturerNo:10 as fk and fetches the product objects and initialize the collection
+-------------------------------------------------------------------------------------------------------------------------------
+N+1 problem
+-----------
+Requirement: fetch all the manufacturer entity objects
+
+To fetch all the manufacturers entity objects from the database, we need to use HQL query as below.
+	
+TypedQuery<Manufacturer> allManufacturersQuery = entityManager.createQuery("from Manufacturer");
+List<Manufacturer> manufactures = allManufacturesQuery.getResultList(); #100 manufacturers
+
+assume: the above query has returned #100 manufactures
+
+for(Manufacturer manufacturer : manufacturers) {
+	Set<Product> products = manufacturer.getProducts();
+	products.forEach(System.out::println)
+}
+
+so here for each manufacturer, to fetch the corresponding products of him, the hibernate/jpa api executes one query per manufacturer. So if there are #100 manufacturers for each manufacturer 1 query to fetch products will be executes that results in #100 more queries on the database which is called N+1 problem
+
+
+here the number of queries or roundtrips against the database in fetching the child association objects will be high and results in performance impact of the application
+
+How to sovle this problem?
+To overcome the above problem hibernate or jpa api has introduced @BatchSize 
+
+
+@Entity
+@Table(name = "manufacturer")
+class Manufacturer {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "manufacturer_no")
+	private int manufacturerNo;
+	@Column(name = "business_nm")
+	private String businessName;
+	@Column(name = "established_dt")
+	private LocalDate establishedDate;
+	@Column(name = "contact_no")
+	private String contactNo;
+	@Column(name = "email_address")
+	private String emailAddress;
+	
+	@OneToMany(mappedBy = "manufacturer")
+	@BatchSize(size=10)
+	private Set<Product> products;	
+}
+
+We can specify the @BatchSize either at class-level so that it is applied to all the collection association types of the class or can be written at a specific association collection within the class.
+	
+This batchSize helps in minimizing the number of roundtrips to the database in fetching the child associations by fetching batch of child associations eagerly as below
+
+
+List<Manufacturer> manufactures = allManufacturesQuery.getResultList(); #100 manufacturers
+
+assume: the above query has returned #100 manufactures
+
+for(Manufacturer manufacturer : manufacturers) {
+	Set<Product> products = manufacturer.getProducts(); #instead of fetching the products for current manufacturer it fetches the products for next #10 manufacturers in the list
+	products.forEach(System.out::println)
+}
+
+so that number of roundtrips to the database in fetching products for #100 manufacturers will be 10 only
+-------------------------------------------------------------------------------------------------------------------------------
+Jpa Cascade 
+------------
+Cascading is the way through which when we perform an action/operation on a target entity, the same action will be applied on the associated entity also.
+	
+Jpa supports 6 Cascade options
+1. ALL
+2. PERSIST
+3. MERGE
+4. REMOVE
+5. REFRESH
+6. DETACH
+
+1. CascadeType.ALL
+propagates all the operations from a parent to the child entity
+
+2. CascadeType.PERSIST
+PERSIST propagates the persist operation from a parent to the child entity. if the child entity we associated is transient, it would be automatically persisted along with target entity
+
+
+Manufacturer manufacturer = new Manufacturer(); // transient
+// populated the data
+
+Product product = new Product(); 
+// populated data
+product.setManufacturer(manufacturer);
+entityManager.persist(product); 
+
+if we declare the foreign key column as not-null, the product entity object above will not be persisted and run into TransientObjectException as the child Manufacturer object is non-persistent entity,because representing its association hibernate/jpa cannot store the foreign key column.
+	
+	
+so inorder to persist the product, first we need to persist manufacturer first, then associate the manufacturer with the product and persist the product as below.
+	
+Manufacturer manufacturer = new Manufacturer(); // transient
+// populated the data
+entityManager.persist(manufacturer);	
+
+Product product = new Product(); 
+// populated data
+product.setManufacturer(manufacturer);
+entityManager.persist(product); 
+
+this means when we are persisting the target entity object product, first we need to persist the associated child entity object manufacturer, thereafter we need to store target. Instead of we carrying #2 operations manually we can apply the operation on the target to its child associated entity also using the help of CascadeType.PERSIST
+
+@Entity
+@Table(...)
+class Product {
+	...
+	@ManyToOne(cascade=CascadeType.PERSIST)
+	@JoinColumn(name="manufacturer_no", nullable=false)
+	private Manufacturer manufacturer;
+}
+
+3. CacadeType.MERGE
+The merge operation copies the state of the given entity object onto the persistent entity object with same identifier in the active session. The CascadeType.MERGE applies the merge operation onto the associated child entity objects as well 
+
+
+Project project = new Project(); // transient
+// populate the data
+entityManager.persist(project);
+
+Associate associate = new Associate(); // transient
+// populate the data
+associate.setProject(project);
+entityManager.persist(associate);
+entityManager.clear();
+
+Associate existingAssociate = entityManager.find(Associate.class, 1);
+Project existingProject = existingAssociate.getProject();
+existingAssociate.setFullName("Joseph P");
+existingProject.setDuration(24);
+
+entityManager.merge(existingAssociate);
+
+even though we tried persisting the target entity object associate, the child associated entity object project also will be updated automatically because of CascadeType.MERGE
+
+4. CascadeType.REMOVE
+The remove operation removes the corresponding record pertaining to the entity object from the underlying database. With CascadeType.REMOVE, the remove operation will be propagated to the associated child entity object as well.
+	
+Project project = entityManager.find(Project.class, 1);
+entityManager.remove(project);
+
+// by default it will not remove we need to manually remove all the associated associates from the project, there after we can remove the project as below
+
+Set<Associate> associates = project.getAssociates();
+associates.forEach(associate->entityManager.remove(associate));
+entityManager.remove(project);
+
+instead by applying CascadeType.REMOVE, the associate associates of the project also will be removed when we remove project entity object
+
+5. CascadeType.REFRESH
+Refresh operation rereads the values for the given entity object from the database. It is used as a kind of undo operations on an persistent entity object. When we apply Cascade.REFRESH, the child or associated entity objects also will be refreshed.
+	
+	
+Project project = new Project(); // transient
+// populate the data
+entityManager.persist(project);
+
+Associate associate = new Associate(); // transient
+// populate the data
+associate.setProject(project);
+entityManager.persist(associate);
+// tx commit
+
+project.setDuration(24);
+associate.setAge(35);
+
+associate.refresh();
+here when we refresh the associate entity object, automatically the refresh will be cascaded onto the child entity project also.
+	
+6. CascadeType.DETACH
+There exist an record representing the entity object in the database table, but the entity object is not associated with an active session then it is called detached state.
+detach is an operation that is used for removing an existing persistent state entity object from the active session, when we apply detach operation using CacadeType.DETACH, even the associated child object also will be detached.
+	
+Project project = new Project(); // transient
+// populate the data
+entityManager.persist(project);
+
+Associate associate = new Associate(); // transient
+// populate the data
+associate.setProject(project);
+entityManager.persist(associate);
+// transaction
+
+the above #2 objects are in persistent state, now using detach operation let us detach the associate from the session
+
+entityManager.detach(associate);
+entityManager.contains(associate); // returns false
+entityManager.contains(project); // return false
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

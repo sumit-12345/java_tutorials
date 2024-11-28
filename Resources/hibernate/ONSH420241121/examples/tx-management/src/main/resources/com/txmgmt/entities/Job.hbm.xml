@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<!DOCTYPE hibernate-mapping PUBLIC
+        "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+        "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<hibernate-mapping package="com.txmgmt.entities">
+    <class name="Job" table="job">
+        <id name="jobNo" column="job_no"/>
+        <property name="jobTitle" column="job_title"/>
+        <property name="description"/>
+        <property name="location"/>
+        <property name="designation"/>
+        <property name="salary"/>
+    </class>
+</hibernate-mapping>

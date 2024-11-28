@@ -1,0 +1,369 @@
+object relational mapping technology is all about mapping the data in relational database management system into object format and vice versa.
+since the tables has relationship established with each other, while mapping the data of these tables with relationships into object model, we need to represent the data relationships into underlying object relationships as well.
+	
+So how to represent relationship between the classes in object world?
+	
+There are 2 reasons for a class to get into relationship with another class:
+1. to reuse the functionality of another class, a class needs to get into relationship with other class
+2. to reuse the data of one class object inside the another we need to establish relationship between the classes
+	
+	
+1. to reuse the functionality of another class inside our class
+A class may not be complete by itself, it may depends or wanted to resue the functionality of another class. for eg.. while working on persisting/retrieving the data from RDBMS database, our class may need to reuse the jdbc api classes to complete the functionality
+	
+Inorder to do this we need to instantiate and hold the objects of another class to reuse the functionality.
+	
+2. to reuse the data of one class object inside another class
+Let us take an example to depect why a class needs be in relationship with another class for reusing the data:
+
+#1. Manufacturer
+
+class Manufacturer {
+	int manufacturerNo;
+	String manufacturerName;
+	LocalDate establishedDate;
+	String contactNo;
+	String emailAddress;
+	String addressLine1;
+	String addressLine2;
+	String city;
+	String state;
+	int zip;
+	String country;
+	// accessors
+}
+This class holds the information/data about an manufacturer. 
+	
+#2. Customer
+
+class Customer {
+	int customerNo;
+	String fullName;
+	LocalDate dob;
+	String gender;
+	String mobileNo;
+	String emailAddress;
+	String addressLine1;
+	String addressLine2;
+	String city;
+	String state;
+	int zip;
+	String country;
+	//accessors
+}
+The Customer class holds the information about the Customer;
+
+If we look at the above 2 classses, the address attributes are seems to be same across and has been duplicated within both of them, this will put us into maintainability problem as well. Instead we can have address as an seperate class and delcare it as an attribute in both these classes to reuse the data/structure of the class
+	
+	
+class Address {
+	String addressLine1;
+	String addressLine2;
+	String city;
+	String state;
+	int zip;
+	String country;
+	// accessors
+}	
+
+class Manufacturer {
+	int manufacturerNo;
+	String manufacturerName;
+	LocalDate establishedDate;
+	String contactNo;
+	String emailAddress;
+	Address address;
+	// accessors
+}
+
+class Customer {
+	int customerNo;
+	String fullName;
+	LocalDate dob;
+	String gender;
+	String mobileNo;
+	String emailAddress;
+	Address address;
+	//accessors
+}
+
+From the above we can understand a class may have to be in relationship with another class for either reusing the functionality or data/attributes of another class
+------------------------------------------------------------------------------------------------------------------------------
+How many ways we can establish relationship between the classes?
+There are 2 ways we can establish relationship between the classes
+1. Inheritance
+2. Association
+
+1. Inheritance
+Inheritance represents is-a (father/child) relationship between the classes. all the traits of the parent class will be inherited into the child class. Through Inheritance a child class can reuse the data/functionality of the parent class.
+
+There are 3 forms of inheritance are there
+1.1 Generalization
+1.2 Specialization
+1.3 Realization
+
+all of the above 3 are inheritance only, but the way the Inheritance relationship is established/constructed would be different. 
+	
+1. Generalization
+Generalization is the process of establishing Inheritance relationship between the classes, by identifying common functionalities out of existing classes within our application and create super class out of it, so that we can reuse the common functionalities across these classes rather than duplicating by extending/inheriting the classes from super class.
+	
+since the super class has been constructed out of the existing classes to share common functionality, only for the sake of reusablity and it is not being used any where we can delcare the super class as abstract class.
+	
+This way of establishing inheritance relationship between the classes is called "Generalization".
+	
+2. Specialization
+Specialization is the process of creating subclasses of out existing classes to add specific/additional functionality that seems to be common for subset of classes within our application.
+	
+3. Realization
+it is an special form of inheritance. realization is creating an implementation class for an interface.
+------------------------------------------------------------------------------------------------------------------------------
+2. Association
+The other way of reusing the functionality of one class inside another class is through Association.
+	
+Association always establishes has-a relationship between the classes. it is used for expressing a thing or an entity is made up of several other things within it.
+Indirectly we are using all or few of the traits or functionalities of others incase of "HAS-A" relationship.
+	
+A class can reuse all/few of the functionalities of another class by using association relationship. It is an another dimension of reusability than Inheritance.
+	
+How do we establish association relationship between the classes?
+We establish assocation relationship between the classes by declaring one class as an attribute inside another class, so that we can use the functionality or data of another class by using the reference of the other class.
+	
+
+class PaymentGateway {
+	public String processPayment(String cardNo, String cvv, String expiry) {}
+}	
+
+class OrderService {
+	PaymentGateway paymentGateway;
+	public String createOrder(..) {
+		paymentGateway = new PaymentGateway();
+		String txNo = paymentGateway.processPayment(...);		
+	}
+}
+	
+There are 3 characteristics of association relationship are there
+1. Cardinality
+2. Directionality
+3. Ownership 
+
+
+
+1. Cardinality
+My class is in association with how many objects of other class is indicated through cardinality. To derive cardinality between the classes we need to read the relationship between the classes from both the sides.
+	
+2. Directionality
+Directionality indicates which side we have represented the association relationship. An association relationship can be uni-directional or can be bi-directional. Incase of uni-directional association only one-side of the relationship is established. The directionality is purely decided based on the usage of the classes within our application
+
+3. Ownership
+optionally a relationship can have ownership indicates who owns the relationship.
+	
+Based on these 3 characteristics we can derive 3 forms of association relationship.
+1. Association
+2. Aggregation
+3. Composition
+
+out of the above 3 forms of association, the composition is the highest-degree of association.
+-------------------------------------------------------------------------------------------------------------------------------
+	
+1. Association
+A class is said to be in association relationship with another class, when a class holds the object of another class where there is no ownership and lifetime dependencies between the classes.
+	
+	
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

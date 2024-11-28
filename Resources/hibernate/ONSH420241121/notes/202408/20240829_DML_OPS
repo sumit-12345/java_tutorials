@@ -1,0 +1,329 @@
+DML operations (in hibernate/jpa api)
+The Hibernate	or jpa api has provided methods for performing DML operations aspart of the Session class itself. Similar to the Session in jpa api the EntityManager has relevant methods to perform DML operations.
+	
+#1. save (insert operation)
+Session: Object save(Object e);
+Object save(Object entity) is part of the Session class, that takes object as an input and saves on to underlying database table (only perform insert operation). upon storing the object, it returns the primary key column value with which the object has been persisted into the database.
+	
+along with that it updates the primary key attribute of the entity object we passed with the id with which the object has been persisted, so that we can always can access the primary key column of the record from the entity itself.
+	
+	
+Object customerNo = session.save(customer);	
+int cNo = customer.getCustomerNo();
+
+But from Hibernate 6 onwards, the save() has been deprecated and removed, in favor of jpa persist(Object entity) method. Now both in hibernate/jpa (Session/EntityManager) we have persist(..)	method only
+
+#2. persist (insert operation)
+syntax:
+Session/EntityManager: void persist(Object entity)
+	
+void persist(Object entity): is used for inserting an entity object into the underlying database table. The major difference between save(..) and persist(..) is, save(..) method returns the id of the object with which it has persisted whereas persist(..) method returnType is void
+
+so incase of persist(..) the only way to access the id of the object that is persisted is by querying from the object itself.
+	
+try {
+	session.persist(customer);
+	int customerNo = customer.getCustomerNo();
+	flag = true;
+}	finally {
+	if(transaction != null) {
+		if(flag) {
+			transaction.commit();
+		}else {
+			transaction.rollback();
+		}
+	}
+}
+--------------------------------------------------------------------------------------------------------------------------
+#2. saveOrUpdate() [Session: only Hibernate Framework]/Hibernate 6: deprecated
+
+Session:
+void saveOrUpdate(Object entity);
+By going with name (saveOrUpdate()) one might think if the entity object we supplied doesnt exists in the table, it performs insert operation and if the entity is already exists, it performs update operation. But in reality it doesnt works in such a way
+
+saveOrUpdate() : method never goes and verifies for the existence of the object in the underlying table. rather it works based on a property "unsaved-value" of an entity object that we configure in the mapping file
+
+Customer.hbm.xml
+-----------------
+<hibernate-mapping package="com.hdml.entities">
+	<class name="Customer" table="customer">
+		<id name="customerNo" column="customer_no" unsaved-value="-1"/>
+		
+		<property name="firstName" column="first_nm"/>
+		<property name="lastName" column="last_nm"/>
+		...
+	</class>
+</hibernate-mapping>
+
+Customer customer = new Customer();
+customer.setCustomerNo(-1);
+customer.setFirstName("joe");
+...
+	
+session.saveOrUpdate(customer);
+upon calling saveOrUpdate(..) by passing entity object, it checks the primary key attribute value of the given object against unsaved-value we configured in the mapping for that entity.
+if the id property value is matching with unsaved-value configured: means entity object is new, so it performs insert operation
+
+if the id property value is not matching with unsaved-value: consider as an existing object within the database and perform update operation
+
+Customer customer = sesion.get(Customer.class, 10);
+customer.setAge(56);
+session.saveOrUpdate(customer);
+
+
+Note: 
+The saveOrUpdate() doesnot works with id generators, always we need to manually assign the id of the entity while performing persistence operation using this.
+	
+#4. void update(Object e)
+void update(Object e) is marked as deprecated and will be removed in the future versions of hibernate in-favor of jpa api merge(..) method
+
+update(..) or merge(..) methods are used for updating an existing entity object into the database table. If there is no record exists corresponding to the id of the object we passed as an input, the update(..) or merge(..) results in an exception indicating no object found for update. This means update(..) or merge(..) is only used for performing update operation only
+
+There are 2 ways of performing update of an entity object
+1. approach#1 [partial update]
+
+we want to modify age and mobile number of an existing customer object, we can do this by first fetching the existing object from the database table and modify those attributes of data and update it as below
+
+Customer customer = session.get(Customer.class, 10);
+customer.setAge(23);
+customer.setMobileNo("93984048");
+session.update(customer);
+
+upon calling the update(customer), it performs an update operation by executing the sql query on the customer table against primary key column value.
+	
+sql: update customer set age=? mobile_no=?.... where customer_no = 10;
+
+
+note: during the update we never update primary key value
+
+2. approach#2 [full update of the object]
+Customer customer = session.get(Customer.class, 10); #select query is waste in-this case
+customer.setFirstName("rick");
+customer.setLastName("P");
+customer.setAge(39);
+customer.setGender("Male");
+customer.setMobileNo("93894");
+customer.setEmailAddress("rick@gmail.com");
+session.update(customer);
+
+here we are updating all the attribtues of the data for the an existing customer, in this case fetching the existing customer data doesnt makes sense for an update, rather create a new empty customer object by populating existing id and modified data directly and call update method as below
+
+Customer customer = new Customer();
+customer.setCustomerNo(10); # existing customerNo
+customer.setFirstName("rick");
+customer.setLastName("P");
+customer.setAge(39);
+customer.setGender("Male");
+customer.setMobileNo("93894");
+customer.setEmailAddress("rick@gmail.com");
+session.update(customer);
+
+update(Object entity) vs merge(Object entity)
+---------------------------------------------
+Incase of update(Object entity), if there exists an entity object with the active session, if we create one more entity object with the same id of the existing one and passed as an input to the update(Object entity) asking him to update the object onto the underlying table, the update(..)	reports/throws an NonUniqueObjectException
+
+Session session = sessionFactory.openSession();
+Transaction transaction = session.beginTransaction();
+Customer customer1 = session.get(Customer.class, 10); #session will keep a reference of the object with him
+
+# modified data in customer1 (imagine) #loose these changes
+customer1.setGender("Male");
+
+Customer customer2 = new Customer();
+customer2.setCustomerNo(10);
+// populate data
+
+...
+session.update(customer2); #throws NonUniqueObjectException
+
+The NonUniqueObjectException is being throw because, there is already an object with the id holding pending changes with the Session, along with this we are passing one more new object matching with the id of the existing object asking the Session to update, which would result in lost of changes we made in object1. So to avoid this Session class throws NonUniqueObjectException
+
+#merge(Object entity):
+incase of merge(Object entity), even though there exist an entity object with the same id that I supplied, ignore all the changes in the existing object and replace or merge with new object I supplied and perform update operation.
+
+Session session = sessionFactory.openSession();
+Transaction transaction = session.beginTransaction();
+Customer customer1 = session.get(Customer.class, 10); #session will keep a reference of the object with him
+
+Customer customer2 = new Customer();
+customer2.setCustomerNo(10);
+// populate data
+
+session.merge(customer2);
+--------------------------------------------------------------------------------------------------------------------------
+#3 delete operation
+void delete(Object entity) #deprecated
+
+void delete(Object entity) is used for removing an existing entity object from the database table based on the matching id supplied. So, at anypoint of time there will be only one record of data will be removed from database table.
+	
+The void delete(Object entity) has been marked as deprecated in 6.x version in favor of remove(Object enttiy) jpa api. End of the data both does the same job of delete a record from table by id
+
+There are #2 ways of working with delete are there
+1. fetch and delete
+At first place find and fetch the entity object we want to delete from the database
+
+Customer customer = session.get(Customer.class, 10); #typically by using an jpsql query we fetch an entity object
+session.delete(customer);
+
+2. create an new entity object with existing id and pass to the delete(..) method
+Customer customer = new Customer();
+customer.setCustomerNo(10);
+session.delete(customer); 
+	
+If we know the entity object we want to delete, instead of fetching the data from database, we can directly populate the id of the object and pass it to the database for deleting the object. So we avoid 1 read operation here
+--------------------------------------------------------------------------------------------------------------------------
+dynamic insert and dynamic update
+
+#1. dynamic update
+
+TrafficChallan trafficChallan = session.get(TrafficChallan.class, 10);
+
+trafficChallan.setReasonForChallan("Signal Jump");
+trafficChallan.setAmount(1000);
+
+session.update(trafficChallan);
+
+
+update traffic_challan set reason_for_challan = ?, amount = ? where challan_no = ?
+#costly operation
+
+
+
+<class name="TrafficChallan" table="traffic_challan" dynamic-update="true">
+	<id name="challanNo" column="challan_no"/>
+	...
+</class>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

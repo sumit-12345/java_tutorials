@@ -1,0 +1,98 @@
+ORM Technology
+ORM stands for object-relational mapping technology, that provides principles, guideliness and best-practices that should be followed in easily mapping the data from relational database into objects and viceversa
+
+based on these ORM Technology principles, the software application developers (who are developing applications based on Object oriented programming languages) has to build their applications in mapping the data between RDBMS and objects.
+	
+implementing the software applications based on the ORM technology principles by the programmers seems to be very complex and end-up in writing huge amount of code in accomplishing it. since it is an common requirement for any application to access the data from RDBMS interms of objects based on ORM Principles, the programming languages has to provide apis in support of ORM Technology
+
+knowledge bytes:
+access the data from database is an common requirement, every java application that is built on java-platform wants to use database as an persistency-store. if java has not provided any api, then using the database in java applications becomes very complex, because developer has to write lot of code in interacting with the database. since using database in java programs is an common requirement, java team has provided jdbc api
+
+jdbc api has provided lot of classes like: Statement, Connection, PreparedStatement, ResultSet etc using them we can quickly program the database applications in java platform
+
+similarly building applications based on ORM principles in support of accessing the data from RDBMS interms of objects is an common requirement, so every programming language has to provide an api
+
+
+it looks like all the programming languages has provided apis in support of working with ORM technology, aspart from java language.
+Initially Java Platform has not provided any api to work with ORM Technology, because java platform has ejb api.
+	
+EJB stands for "Enterprise Java Beans". These are of 3 types
+1. Session beans
+2. Entity beans
+3. Message-driven beans
+
+out of which, Entity Beans supports querying, storing the data in RDBMS interms of objects, but not based on ORM Principles. So java doesnt want to support ORM as it has EJB technology on the similar grounds
+
+
+EJB seems to be very complex and heavy-weight technology and suited in enterprise environments only, for small or moderate solutions these seems to be not-viable option.
+	
+So the developers in java platform are looking for alternate to EJB by support ORM technology. So to help in bridging the gap between Sun microsystems and the people of java platform developers, the third-party organizations/vendors came into picture.
+	
+The Third-party vendors / software manufacturers provided several third-party libraries in support of working with ORM technology in java platform. few of the third-party libraries/frameworks available are
+1. hibernate (jboss)
+2. toplink / eclipselink
+3. ibatis / mybatis
+etc
+
+out of the above libraries that are available, hibernate framework is very popular ORM technology framework.
+	
+entity beans (removed) = replaced with jpa api
+jpa = java persistence api = to support working with ORM technology aspart of java platform.
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,86 @@
+Entity object lifecycle
+------------------------
+Lifecycle = The phases through which an object or a thing is being put through right from its birth to its death is being part of the Lifecycle
+
+Entity object lifecycle 
+The various different states through which the object could transition or could exist during its existence is desribed as lifecycle of an entity object. Based on the operations we carry on or perform on the object, the object could move across the different states.
+	
+There are #3 different states in which an entity object could exists in hibernate:
+1. transient
+if there is no record representing that entity object within the database table, and the object is not associated with an active session. Then the object is said to be in transient state.
+	
+2. persistent
+if the object is associated with an active session and there exists a corresponding record within the table representing that object, then the object is said to be in persistent state. 
+	
+important: any change on this persistent state entity object would be tracked and persisted automatically by the session class within the application.
+
+	
+try {
+	customer = session.get(Customer.class, 10); 
+	customer.setFullname("Alpha");
+	
+	flag = true;
+}	finally {
+	
+	if(transaction != null) {
+		if(flag) {
+			transaction.commit();
+		}else {
+			transaction.rollback();
+		}
+		session.close();
+	}
+}
+	
+3. detached
+if the record representing the entity object exists within the database table, but the object is not associated with an active session, then the object is said to be in detached state.
+	
+	
+customer = session.get(Customer.class, 10);
+session.close();
+
+#here: what is the state of customer object? 
+		
+customer = new Customer();
+customer.setCustomerNo(10); = either it can be in transient or detached depends on the id.
+//populated data
+	
+
+	
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

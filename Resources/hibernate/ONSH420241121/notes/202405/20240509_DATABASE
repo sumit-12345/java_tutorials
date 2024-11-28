@@ -1,0 +1,111 @@
+Typical requirements in persisting the data on the FileSystem of the computer are:
+1. The data should be human and machine understandable format
+2. data should be secured
+3. should support sequential and random access
+4. must be inter-operable
+5. allow us to represent relationship between the data
+6. structured and well-defined semantics to be attached to the data, so that we can easily intepret the data without any mis-interpretation
+7. data manipulation operations like inserting, append, update, delete etc should be supported
+8. validation on the data
+9. no wastage of storage space in storing the data
+10. with less cpu and memory should be able to process the data
+
+it looks like every application irrespective of programming language requires persistency as an basic requirement, fulfilling the above aspects in building the application for persisting the data seems to be very complex and takes huge amount of time. since it is an common requirement in persisting the data for any application instead of everyone implementing this, the database management system softwares are introduced.
+-------------------------------------------------------------------------------------------------------------------------------	
+Database Management System
+Database Management System (DBMS) is an system software that abstracts the software applications from the complexity of persisting the data on the underlying storage device of the computer.
+	
+It takes care of storing and retrieving the data on the underlying FileSystem of the computer permanently. All that we need to do in building the software applications for performing the persistency is just talk to database management system from our application, the details of storing the data will be taken care by database management system itself.
+	
+There are 5 types of database management system softwares are there:
+1. Hierarchial database
+2. Network database
+3. Relational database
+4. No-Sql database
+5. Object Storage database
+
+1. Hierarchial database
+Hierarchial database is a data model in which the data is stored in records and organized into tree-like structure or parent-child structure.
+	
+The data is stored interms of Records which are also can be referred as "Nodes". Each Node holds the data part and address part pointing to the address of the parent and child nodes it is in relationship with. Since it is an hierarchical representation, each node has only one parent.
+	
+advantages:-
+	1. performing data manipulation operations like inserting a new record, or deleting an existing record or updating an record is quite easy. all that we need is manipulate the address of these records
+	
+dis-advantages:-
+	1. more than the data, we endup in storing lot of addresses between the nodes in the database management system. so huge amount of memory is wasted.
+	2. since each node may contain any arbitary data, searching and accessing the data is very difficult. we need to traverse across all the nodes of the tree to access the data
+	3. to access a specific data of the Tree, we need to memorize the address of the Node, which is very complex
+	4. The hierarchical representations permits a node to have only one parent, but in real-world business data has diversified relationships and are not suitable to be represented using hierarchial model
+	
+so the major setback for these databases is they fail in representing real-world relationship between the data. To overcome this problem, the network databases are introduced.
+
+
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

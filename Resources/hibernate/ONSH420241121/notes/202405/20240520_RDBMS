@@ -1,0 +1,271 @@
+There are 3 popular known and available database types are there
+1. RDBMS
+2. No-Sql / Semi-Structured database
+3. Object Storage database
+
+Based on the requirements of the application, developers might use any of three or all of these databases in building the application. So None of these databases are mutually exclusive rather each of them compliments the other databases helping us in building the applications
+
+From our previous discussions, we pursued: 
+RDBMS databases 
+	1. stores the data interms of tables allowing us to represent relationship between the data using pk & fk.
+	2. supports data consistency through transactionality
+	3. can enforce data validations through constraints
+which are the key characteristics required for building business applications as business applications requires high level consistency and accuracy
+
+
+How does java applications holds the data to perform operations on it?
+Java applications always holds the data interms of objects, using which they perform operations on the data.
+	
+Why java applications holds the data interms of objects to perform operation on it?
+To understand let us see the below usecase:
+
+Consider: we have sales table in RDBMS database and we want to fetch the data from the sale table and compute total sale made.
+Table: [sale_no, customer_nm, sale_dt, quantity, amount]	
+
+
+class SaleManager {
+	public double getTotalSaleAmount(Date date) {
+		double totalSaleAmount = 0.0;
+		Connection con = null;
+		PreparedStatement pstmt = null;
+		ResultSet rs = null;
+		
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://localhost:3306/groceriesstoredb", "root", "root");
+			pstmt = con.preparedStatement("select amount from sales where sale_dt = ?");
+			pstmt.setDate(1, new java.sql.Date(date.getTime()));
+			
+			rs = pstmt.executeQuery();  // resultset record
+			while(rs.next()) {
+				totalSaleAmount = totalSaleAmount + rs.getDouble("amount"); #business logic
+			}
+		} catch(ClassNotFoundException | SqlException e) {
+			e.printStackTrace();
+			throw e;
+		}finally {
+			if(pstmt != null) {
+				pstmt.close();
+			}
+			if(con != null) {
+				con.close();
+			}
+		}
+		
+		return totalSaleAmount;
+	}
+}
+	
+In this java program we are querying and accessing the data from database table and performing business operation on that data
+
+So there are 2 types of logics are there
+1. persistence logic
+2. business logic
+
+The persistence logic and business logic has been written inter-mingled with each other in such a way, they cannot be separated 
+(or)
+these 2 logics are tightly coupled with each other.
+
+Tightly coupled: one will not exist without the other.
+
+The business logic is accessing the data directly from the ResultSet record (nothing database) and using it for performing business operation.
+
+This way of implementing the code brings lot of dis-advantages:
+1. The business logic is exposed to the source system, so that a change in the underlying system like RDBMS database to No-Sql database not only impacts persistence logic, it effects business logic also
+2. If we want to work with multiple-source systems of inputs, then we need to write multiple copies of the program each per the underlying source system, as the business logic is referring the data directly from source system. due to this across the programs the business logic will be duplicated and inccurs huge amount of maintainance and complexity
+3. if the underlying data format in which the data is stored in the source system has been changed, it effects the business logic along with persistence logic
+
+From the above we understood, any change in persistency store not only affects the persistence logic, it effects business logic also which inccurs huge cost/time in maintaining the programs
+
+How to solve this problem?
+	
+
+class Sale {
+	int saleNo;
+	String customerName;
+	Date saleDate;
+	int quantity;
+	double amount;
+	// accessors
+}
+
+
+class SalesManager {
+	public double getTotalSaleAmount(List<Sale> sales) {
+		double totalAmount = 0;
+		
+		for(int i=0;i<sales.length();i++) {
+			Sale sale = sales.get(i);
+			totalAmount = totalAmount + sale.getAmount();
+		}
+		
+		return totalAmount;		
+	}
+}
+
+here the business logic is designed to work with objects of data as an input/output, so that the business logic will be completely agnostic from the underlying source system. So now any change in the persistency-tier of the application will not affect business logic.
+	
+The responsibility of reading the data from source system into the object format is taken care by one more class:
+We can call this class as "DataAccessor"
+	
+class SalesDataAccessor {
+	public List<Sale> getSalesByDate(Date date) {
+		Sale sale = null;
+		ResultSet rs = null;
+		Connection con = null;
+		List<Sale> sales = null;
+		PreparedStatement pstmt = null;
+		
+		try {
+			Class.forName("com.mysql.cj.jdbc.Driver");
+			con = DriverManager.getConnection("jdbc:mysql://localhost:3306/groceriesstoredb", "root", "root");
+			pstmt = con.preparedStatement("select s.sale_no, s.customer_nm, s.sale_dt, s.quantity, s.amount from sales s where s.sale_dt = ?");
+			pstmt.setDate(1, new java.sql.Date(date.getTime()));
+			
+			rs = pstmt.executeQuery();
+			sales = new ArrayList();
+			
+			// iterate record by record
+			while(rs.next()) {
+				sale = new Sale();
+				sale.setSaleNo(rs.getInt(1));
+				sale.setCustomerName(rs.getString(2));
+				sale.setSaleDate(rs.getDate(3));
+				sale.setQuantity(rs.getInt(4));
+				sale.setAmount(rs.getDouble(5));
+				
+				sales.add(sale);				
+			}
+			
+		}catch(ClassNotFoundException | SqlException e) {
+			throw e;
+		} finally {
+			if(pstmt != null) {
+				pstmt.close();
+			}
+			if(con != null) {
+				con.close();
+			}
+		}
+		return sales;
+	}
+}	
+
+
+class Application {
+	public static void main(String[] args) {
+		SaleDataAccessor accessor = new SaleDataAccessor();
+		List<Sale> sales = accessor.getSalesByDate(new Date(2024, 4, 20));
+		
+		SalesManager salesManager = new SalesManager();
+		double totalSalesAmount = salesManager.getTotalSalesAmount(sales);
+		System.out.println("sales amount : " +totalSalesAmount);
+	}
+}
+
+From the above we can understand, always the java programs has to be designed to work with objects of data only, so that the business logic would be maintainable and less complicated.
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+	
+	

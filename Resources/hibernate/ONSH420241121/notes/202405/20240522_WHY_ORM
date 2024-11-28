@@ -1,0 +1,83 @@
+Why does java programs should be designed to work with objects of data in performing the business logic?
+If java programs are directly accessing the data from the underlying source system using which it is performing the business operation we run into several problems:
+1. The business logic is exposed to the underlying source system from where data is accessed from, so that in-future if we are switching from one source system to another, the business logic would be impacted.	
+2. We cannot make the business logic work with multiple source systems of input, we need to duplicate the business logic for each source system
+3. The format in which the data is stored in the underlying source system has been changed, there is an impact on the business logic
+
+To overcome this problems, always we need to design the java programs to work with objects of data in performing business logic so that the business logic would be abstracted from the source system
+-------------------------------------------------------------------------------------------------------------------------------
+Problems in accessing the data from RDBMS database in java programs:
+The RDBMS database allows us to store/represent the data interms of tables, whereas java programs always want to access the data interms of objects to perform business operation on that data.
+	
+While accessing the data from RDBMS database using jdbc api in java, we always access the data interms of records/tupples which is relational format only. So the programmer has to write code to fetch the data from RDMBS and covert the data into object format so that it can be used for performing operations. This process of coverting the data from RDBMS into object format poses lot of problems:
+
+1. In a typical application we have lot of tables in the database, so while accessing the data within our application from any of these tables, we need the data interms of objects only. So programmer has to endup in writing lot of code in accessing/converting the data that is accessed from these tables into objects which would take huge amount of time and cost in building the application
+
+2. The java programs upon performing the business logic will compute the output, and the output that is produced is interms of objects. These objects of data has to be persisted into the database tables for future usage. Again we cannot persist directly the objects of data into the underlying tables, so we need to map/convert the data that is there in objects into relational table and their columns to perform persistency operation, which would be another huge aspect in working with RDBMS.
+	
+3. From the above we can understand we need to write the code for coverting relational data into objects and object data into relational format to perform operations on the data. All this logic we are writing in coverting to/fro is called fuss logic or crap which doesnt add any functional or business value to the system we are building
+
+4. 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

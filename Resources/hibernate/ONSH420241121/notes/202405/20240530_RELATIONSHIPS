@@ -1,0 +1,89 @@
+Hibernate / Jpa api is an adoption of ORM Technology principles and guideliness. ORM is all about mapping the data from relational database management system into object model.
+	
+The RDBMS databases not only stores the data interms of tables, they even represent relationship between the data across these tables, so while mapping the RDBMS data into object model, we should even represent their relationship between the data interms of object relationships as well.
+	
+So unless we understood both the sides of world and how/what type of relationships they support, we cannot understand how to map the data along with their relationships from relational database to object and viceversa
+
+How to establish relationship between the data across the tables in relational database management system?
+We cannot store all the data pertaining to an business or an application into one-single table, because we run into data anamolies in storing/managing the data as below
+
+1. Insertion Anamoly
+2. Deletion Anamoly
+3. Updation Anamoly
+
+How to overcome this data anamolies?
+Always store different entities of data into separate tables and establish relationship between the data, if those are related with each other.
+	
+How to represent relationship between the data across the tables in RDBMS?
+As we broke the data and distributed it across the tables, inorder to represent the relationship between the data across the tables we need to rely on primary key and foreign key columns.
+	
+1. Each table must and should have an primary key column using that we can uniquey identify a record of information within that table, so that it acts as an logical address of the records using which we can make it participate in a relationship
+2. Write the primary key column of the table as an foreign key or referrential column in another table, through which we can identify the record of our table is in relationship with which record of another table.
+	
+By writing primary key column of our table as an foreign key column in another table we can derive #3 types of relationships between the tables
+1. one-to-one
+2. one-to-many
+3. many-to-many
+
+How to derive which type of relationship should be established between the tables?
+it purely depends on the business assumptions on which we are storing the data within those tables, we cannot derive relationship between the tables directly by looking at the data or based on personal choice or preference
+
+How to establish these relationships between the tables?
+There are 3 types of relationships we can establish between the tables.
+	
+1. one-to-one
+	1.1 direct one-to-one
+	1.2 one-to-many as one-to-one
+2. one-to-many (or) many-to-one
+3. many-to-many
+
+2. one-to-many (or) many-to-one
+let us explore how to represent one-to-many relationship between the tables
+
+3. many-to-many relationship
+
+
+
+
+
+
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+

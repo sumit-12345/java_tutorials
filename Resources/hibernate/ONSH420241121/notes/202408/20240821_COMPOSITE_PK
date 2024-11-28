@@ -1,0 +1,146 @@
+How to work with composite primary keys in Hibernate or Jpa application?
+Within an primary key, if there are more than 1 columns are there aspart of it, then it is called composite primary key.
+	
+The composite primary key is not an surrogate key and hence the system will not generate the key and we dont need any id generator for them.
+	
+Until now we are considering the tables/entities that has only one column being part of the primary key and we are mapping the attribute corresponding to the column as primary key attribute by using <id> tag or @Id annotation.
+	
+But incase of composite primary key, we have more than 1 column is part of the primary key, so how to represent the primary key of the table within the entity class and how to map it by writing mapping file
+	
+loan_application
+application_no (pk)
+branch_code (pk)
+applicant_nm
+applied_dt
+loan_type
+loan_amt
+tenure
+
+#1. representing the composite primary key columns of the table, create an pk (primary key) class. The primary key class we are writing should comprise of the attributes representing the primary key columns of the table. In addition the class must and should be implementing from Serializable interface
+	
+@Embeddable	
+class LoanApplicationPK implements Serializable {
+	@Column(name="application_no")
+	private int applicationNo;
+	@Column(name="branch_code")
+	private String branchCode;
+	
+	// accessors
+}
+
+@Embeddable = indicates a class as not an entity class, rather would be embedded (written-inside) another entity class
+
+#2. create an entity class representing the structure of the database table, in which delcare the pk class as attribute inside.
+	
+@Entity
+@Table(name="loan_application")
+class LoanApplication implements Serializable {
+	@EmbeddedId
+	private LoanApplicationPK loanApplicationPk;
+	
+	@Column(name="applicant_nm")
+	private String applicantName;
+	@Column(name="applied_dt")
+	private LocalDate appliedDate;
+	@Column(name="loan_type")
+	private String loanType;
+	@Column(name="loan_amt")
+	private double loanAmount;
+	
+	// accessors
+}	
+
+@EmbeddedId = indicates the id property of this class is not primitive rather another @Embeddable class is declared as an id. Indirectly indicates multiple attributes are representing the primary key for my entity
+
+To perform persist operations we need to create #2 objects
+LoanApplicationPK pk = new LoanApplicationPK();
+pk.setApplicationNo(1);
+pk.setBranchCode("ICICI001");
+
+LoanApplication loanApplication = new LoanApplication();
+loanApplicatio.setLoanApplicationPk(pk);
+loanApplication.setApplicantName("Roger");
+// populate data
+
+session.persist(loanApplication);
+
+To get the data of the entity class
+LoanApplicationPK pk = new LoanApplicationPK();
+pk.setApplicationNo(100);
+pk.setBranchCode("ICICI001");
+
+session.get(LoanApplication.class, pk);
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

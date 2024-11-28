@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<hibernate-mapping xmlns="http://www.hibernate.org/xsd/orm/hbm" package="com.getvsload.entities">
+    <class name="Customer" table="customer" proxy="ICustomer">
+        <id name="customerNo" column="customer_no"/>
+        <property name="fullname"/>
+        <property name="age"/>
+        <property name="gender"/>
+        <property name="mobileNo" column="mobile_nbr"/>
+        <property name="emailAddress" column="email_address"/>
+    </class>
+</hibernate-mapping>

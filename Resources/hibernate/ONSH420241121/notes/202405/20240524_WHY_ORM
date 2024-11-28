@@ -1,0 +1,71 @@
+RDBMS databases stores the data interms of tables in form of records or tupples. Within the java application through jdbc api, we always access the data from RBDMS tables interms of ResultSet of records of data (which means relational format). But java applications wants to access the data interms of objects only
+
+Because directly accessing the data from the source system in performing operations on the data will results in lot of problems as we discussed earlier.
+	
+So how can java applications can query/access the data from RDBMS database tables interms of objects? 
+The java developers has to write the code in coverting the resultset of records of data into objects so that these objects can be used in performing business operation. Even though the programmer can write the code in coverting the data we have plenty of problems with this approach:
+
+problems:
+1. In a typical application we have lot of tables being used, for all of these tables to fetch and perform operations on the data we need to write conversion logic in coverting the data from records/tuples into object format which results in huge amount of code that requires lot of time and cost in development
+
+2. The business logic within our application will compute some output, and the output object that is produced by the business logic should be persisted into the RDBMS Table for future usage. So again we need to write the conversion logic in mapping the object data into table format, which results in huge code, time and cost
+
+3. always a record is not equal to an object. while working on join queries in fetching the data across the tables, the records data should be rolled up into fewer number of objects than the number of records being queries.
+	
+For eg.. when we are fetching the data from customer and sales table, a customer might have bought multiple sales in that case for a customer there can be multiple records being returned for each sale he bought duplicating the customer data.
+Lets say a customer bought 5 sales then the query returns 5 records where the customer data in all the 5 records is same.
+	
+So if we convert these 5 records into 5 objects, then we would endup in holding duplicate objects within the jvm memory having all 5 with same customer data that leads to jvm memory wastage. 
+	
+Rather than wrapping 5 records into 5 objects, it should be 1 customer object with list<sale> objects of 5 in that customer. This is called roll-up logic. 
+	
+So whereever we are working on join queries across all those places we need to write rollup logic in coverting the data into objects which is quite complex.
+	
+From the above we can understand we end up writing huge amount of code in mapping data from relational table to objects and objects to relational tables. sometimes even complex code in mapping these data while working with tables/joins. All this code we writing is not functional code and it is fuss logic or throw-away code that doesnt have any business value of it.
+	
+even then also the programmers would endup in writing huge amount of code in mapping the data between RBDMS to objects and vice versa thus increasing the time of development and cost of development.
+	
+In addition to this, if there is a change in database table structure, the developer has to identify all the places within the code where we are fetching the data from that table and wrapping into object and change the logic which is tedious job to maintain.
+	
+	
+	
+any java projects, built-by any one in working with RDBMS: wants to query the data interms of objects only (common requirement)
+	
+object-oriented programming language application:	
+	
+.net program => RDBMS
+              (records)
+	
+	
+then write conversion logic = problems
+
+every object oriented programming language applications = RDBMS
+wants to access the data interms object only (but want to avoid conversion logic)
+	
+How to achieve this?
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

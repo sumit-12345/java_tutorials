@@ -1,0 +1,85 @@
+Inheritance Mapping model
+For the entity classes with inheritance relationship, we need to create an table model in mapping these classes into database tables in such a way, it permits us to perform database operations on these entity classes in an polymorphic way is called "Inheritance Mapping model"
+	
+There are #3 ways we can map an inheritance hierarchy of entity classes into relational model
+1. Table per class hierarchy
+2. Table per subclass
+3. Tabler per concrete class
+--------------------------------------------------------------------------------------------------------------------------
+1. Table per class hierarchy
+In Table per class hierarchy strategy, for all the entity classes within the inheritance hierarchy we create only one single table. Within this table we define all the attributes of all the entity classes in the hierarchy as columns, so that any of the entity objects of these hierarchy classes can be persisted or retrieved from this single table itself.
+
+
+@Entity
+@Table(name="insurance_plan")
+@Inheritance(strategy=InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name="plan_type", discriminatorType=DiscriminatorType.STRING)
+@DiscriminatorValue("ip")
+class InsurancePlan implements Serializable {
+	@Id
+	@Column(name="insurance_plan_no")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private int insurancePlanNo;
+	@Column(name="plan_nm")
+	private String planName;
+	@Column(name="min_age")
+	private int minAge;
+	@Column(name="min_insurred_amt")
+	private double minInsurredAmount;
+	
+	// accessors
+}
+
+@Entity
+@DiscriminatorValue("aip")
+class AccidentalInsurancePlan extends InsurancePlan {
+	@Column(name="coverage_type")
+	private String coverageType;
+	@Column(name="partial_disability_coverage_percentage")
+	private double partialDisabilityCoveragePercentage;
+	@Column(name="death_coverage_percentage")
+	private double deathCoveragePercentage;
+	
+	// accessors
+}
+
+@Entity
+@DiscriminatorValue("mip")
+class MedicalInsurancePlan extends InsurancePlan {
+	private int copay;
+	@Column(name="network_type")
+	private String networkType;
+	
+	// accessors
+}
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

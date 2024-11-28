@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<persistence xmlns="http://java.sun.com/xml/ns/persistence" version="2.0">
+    <persistence-unit name="otmspu">
+        <provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+        <class>com.otms.entities.Manufacturer</class>
+        <class>com.otms.entities.Product</class>
+
+        <properties>
+            <!--<property name="jakarta.persistence.jdbc.driver" value="com.mysql.cj.jdbc.Driver"/>
+            <property name="jakarta.persistence.jdbc.url" value="jdbc:mysql://localhost:3306/hibdb"/>
+            <property name="jakarta.persistence.jdbc.user" value="root"/>
+            <property name="jakarta.persistence.jdbc.password" value="welcome1"/>-->
+
+            <property name="hibernate.connection.provider_class" value="org.hibernate.hikaricp.internal.HikariCPConnectionProvider"/>
+            <property name="hibernate.hikari.connectionTimeout" value="5000"/>
+            <property name="hibernate.hikari.maximumPoolSize" value="10"/>
+            <property name="hibernate.hikari.minimumIdle" value="5"/>
+            <property name="hibernate.hikari.idleTimeout" value="600000"/>
+            <property name="hibernate.hikari.maxLifetime" value="1800000"/>
+            <property name="hibernate.hikari.poolName" value="otmspool"/>
+            <property name="hibernate.hikari.dataSourceClassName" value="com.mysql.cj.jdbc.MysqlDataSource"/>
+            <property name="hibernate.hikari.dataSource.url" value="jdbc:mysql://localhost:3306/hibdb"/>
+            <property name="hibernate.hikari.dataSource.user" value="root"/>
+            <property name="hibernate.hikari.dataSource.password" value="welcome1"/>
+
+            <property name="hibernate.show_sql" value="true"/>
+            <property name="hibernate.dialect" value="org.hibernate.dialect.MySQLDialect"/>
+            <property name="hibernate.hbm2ddl.auto" value="update"/>
+        </properties>
+    </persistence-unit>
+</persistence>

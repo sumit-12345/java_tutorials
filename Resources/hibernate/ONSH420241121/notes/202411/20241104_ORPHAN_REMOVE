@@ -1,0 +1,84 @@
+orphan removal / orphan delete
+-------------------------------
+
+class Parcel {
+	int parcelNo;
+	String weight
+	String description;
+	double charges;
+	
+	@ManyToOne
+	@JoinColumn(name="agent_no")
+	DeliveryAgent deliveryAgent;
+	
+}
+
+class DeliveryAgent {
+	int agentNo;
+	String agentName;
+	int experience;
+	String designation;
+	
+	@OneToMany(mappedBy="deliveryAgent", orphanRemoval=true)
+	Set<Parcel> parcels;
+}
+
+
+parcel
+parcel_no  weight  description  charges  agent_no (fk)(nullable)
+p1          10     cotton box   3000     a1	
+p2          20     toybox       500      null  (orphan) (deleted)
+
+delivery_agent
+agent_no  agent_nm  experience   designation
+a1        james
+a2        john
+a3        jack
+a4        jupiter
+
+
+
+
+
+DeliveryAgent agent = entityManager.find(DeliveryAgent.class, "a1");
+Set<Parcel> parcels = agent.getParcels();
+Iterator it = parcels.iterate();
+
+while(it.hasNext()) {
+	parcel = it.next();
+	if(parcel.getWeight() > 10) {
+		it.remove();
+	}
+}
+entityManager.merge(agent);
+
+
+
+
+
+Product
+Manufacturer
+
+
+Contract
+Worker
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

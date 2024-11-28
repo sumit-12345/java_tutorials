@@ -1,0 +1,308 @@
+advantages of hibernate over jdbc api
+1. jdbc is an api, so we need to write boiler-plate logic while working with jdbc, whereas hibernate is an framework that eliminates writing boiler-plate logic within an application
+
+2. jdbc api, always run into resource leakage issue and managing resources is a tough job, whereas hibernate framework resource management is quite easy
+
+3. all the exceptions in jdbc api are checked-exceptions due to which we endup in sourrounding the code around un-necessary try/catch blocks. Hibernate exceptions are un-checked exceptions, so that we have much cleaner code implementation withit
+
+4. in jdbc api working with tx is difficult, local transactions: use jdbc api, global transaction = jdbc+jta api switching between transaction mechanism requires re-write the application logic. Hibernate has provided unified transaction management api for working with both local and global transactions
+
+5. jdbc api: uses native sql queries, so that database portability is not possible. In hibernate/jpa we write hql/jpql queries which are database in-dependent query language that makes hibernate application portable across the databases
+
+6. jdbc api, we refer the table names and column names while writing queries and accessing data within our application, so that our application logic is exposed to the schema model, so any change in the schema effects the jdbc logic written in our application. Hibernate we refer classnames and attributes names which are mapped to database tables and respective columns through mapping. So any change in schema needs only a change in relevant mapping file and application logic will not be effected. So easy to maintain
+
+7. jdbc api, is not designed to support enterprise application persistence requirements and doesnt have support of caching. where hibernate has been built from its ground to support caching.
+--------------------------------------------------------------------------------------------------------------------------
+Hibernate Bootstrapping
+The way the core objects of the Hibernate Framework or Echo system are being instantiated or created to be uses is called "bootstrapping".
+Different versions of the Hibernate has different ways/mechanisms or apis in instantiating these core objects	
+	
+Versions of Hibernate framework:
+3.x (Legacy) = 3.x bootstrapping machanisms even exists in Latest version of the Hibernate framework
+	1. Properties approach
+	2. XML-Based configuration approach
+	3. Programmatic approach
+
+4.x = new way of boostrapping the hibernate has been additionally added/supported (skip)
+Service and Service Registry approach
+	
+5.x/6.x = some more additions are added to the 4.x allowing more ways of bootstrapping the core components
+Metadata approach
+
+
+1. Hibernate 3.x bootstrapping mechanisms
+There are 3 ways of bootstrapping the hibernate framework are there
+	
+1.1 Properties approach
+In properties approach we write properties file in writing the hibernate configuration rather than using the XML file let us understand
+
+class Passport {
+	int passportNo;
+	String passportHolderName;
+	LocalDate issuedDate;
+	LocalDate expiryDate;
+	String issuedAuthority;
+	// accessors
+}
+
+Policy.hbm.xml
+--------------
+<?xml version="1.0" encoding="utf-8"?>
+<hibernate-mapping package="com.hb3.entities">
+	<class name="Passport" table="passport">
+		<id name="passportNo" column="passport_no"/>
+		<property name="passportHolderName" column="passport_holder_nm"/>
+		...
+	</class>
+</hibernate-mapping>
+	
+Along with mapping information to perform persistence operation we need database and hibernate framework configuration	information aswell. Till now we have been writing this information in XML-based configuration file (hibernate.cfg.xml). Instead of writing in XML we can have this information defined in properties file as well.
+		
+In hibernate 3.x, we need to write the properties file with name as "hibernate.properties" only and should be placed directly under the classpath of the application only. There are several reasons insupport of properties file has been added.
+		
+1. writing an XML-Based configuration is difficult, because knowledge of XML is needed. along with that we need to write complex DTD declaration tags, instead hibernate has added support of properties, so that it can be quickly written.
+		
+2. during the time of testing the application, developers can write hibernate.properties with the test database	information and can quickly bootstrap in testing the application
+
+
+The major different between hibernate.cfg.xml and hibernate.properties is:
+1. In hibernate.cfg.xml we can define mapping information using <mapping resource=""/> tag within the XML-configuration file. But when it comes to properties file approach, we cannot define mapping resources inside the properties file rather we need to add the mapping resources within the program itself through application logic
+
+2. for all the properties we define in "hibernate.properties" file we need to prefix "hibernate." to differentiate hibernate properties from others
+
+hibernate.properties [classpath]
+--------------------------------
+hibernate.connection.driver_class=com.mysql.cj.jdbc.Driver
+hibernate.connection.url=jdbc:mysql://localhost:3306/hibdb
+hibernate.connection.username=root
+hibernate.connection.password=root
+hibernate.show_sql=true
+hibernate.dialect=org.hibernate.dialect.MySQLDialect
+// we cannot add mapping information
+
+
+Test.java
+----------
+Configuration configuration = new Configuration();
+
+The default constructor of the Configuration class looks for hibernate.properties file under the classpath of the application. If it is available reads the properties file and loads the configuration properties into it. otherwise ignores and instantiates the Configuration object as empty.
+	
+upon creating the Configuration object, now we need to programmatically add mapping resources or entity mapping information into the Configuration object that we created above.
+	
+configuration.addResource("com/hb3/entities/Passport.hbm.xml");
+
+SessionFactory sessionFactory = configuration.buildSessionFactory();
+Session session = sessionFactory.openSession();
+// perform operations
+
+
+1.2 XML-Based configuration approach
+The XML-based approach of bootstrapping the hibernate framework is the standard practise does everyone follow. By default we need to write the Hibernate Configuration XML file with name as "hibernate.cfg.xml" and should be placed under the classpath of the project directly
+
+Configuration configuration = new Configuration().configure();
+upon instantiating the Configuration object, the default constructor looks for hibernate.properties, if not found ignores and creates an empty object, on which we are invoking configure() method.
+	
+The configure() method looks for hibernate.cfg.xml under the classpath of the project, reads and loads the configuration into a new Configuration object and returns to us.
+	
+If we wish to change the name of the hibernate configuration file, we can do so, but we need to pass explicitly the name of configuration file as an input while calling configure() method as below.
+
+resources
+|-com
+	|-hb3
+		|-config
+			|-hb3-hibernate.cfg.xml (holds hibernate configuration)
+	
+now to load this configuration we need to instantiate the Configuration object as below.
+Configuration configuration = new Configuration().configure("com/hb3/config/hb3-hibernate.cfg.xml");
+
+
+Incase if we are working with multiple databases, then we need to create multiple session factory objects each per one database loaded with relevant database, hibernate and mapping information. 
+For eg.. if we are using 2 databases aspart of our application, we need to have 2 hibernate.cfg.xml. it is not possible to write 2 files with same name, so we write with 2 different names
+
+1. hr-hibernate.cfg.xml
+2. payroll-hibernate.cfg.xml
+
+so we need to explicity pass hibernate configuration filename to configure() method while creating the object of Configuration.
+	
+1.3 Programmatic bootstrapping
+In programmatic approach we avoid writing hibernate configuration in properties or xml file, rather we populate the configuration and mapping information directly into Configuration class object programmatically using which we bootstrap our hibernate application
+	
+Configuration configuration = new Configuration(); // empty object
+configuration.setProperty("hibernate.connection.driver_class", "com.mysql.cj.jdbc.Driver");
+configuration.setProperty("hibernate.connection.url", "jdbc:mysql://localhost:3306/hibdb");
+configuration.setProperty("hibernate.connection.username", "root");
+configuration.setProperty("hibernate.connection.password", "welcome1");
+configuration.setProperty("hibernate.show_sql", "true");
+configuration.addResource("com/hb3/entities/Passport.hbm.xml");
+
+SessionFactory sessionFactory = configuration.buildSessionFactory();
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	

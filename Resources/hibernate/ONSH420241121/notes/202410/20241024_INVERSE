@@ -1,0 +1,157 @@
+inverse
+-------
+The name "inverse" is a bit confusing from the hibernate world, rather it should be named as "who is the owner of the association".	The inverse comes into picture when we are working with bi-directional mapping/associations only.
+	
+Let us consider an example in exploring the concept of inverse:
+
+@Entity
+@Table(name = "product")
+public class Product implements Serializable {
+    @Id
+    @Column(name = "product_no")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private int productNo;
+    @Column(name = "product_nm")
+    private String productName;
+    private String description;
+    private String category;
+    private double price;
+    @ManyToOne
+    @JoinColumn(name = "manufacturer_no", nullable=false)
+    private Manufacturer manufacturer;
+}
+
+@Entity
+@Table(name = "manufacturer")
+public class Manufacturer implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "manufacturer_no")
+    private int manufacturerNo;
+    @Column(name = "business_nm")
+    private String businessName;
+    @Column(name = "established_dt")
+    private LocalDate establishedDate;
+    @Column(name = "contact_no")
+    private String contactNo;
+    @Column(name = "email_address")
+    private String emailAddress;
+	
+    @OneToMany(mappedBy="manufacturer") #inverse
+    //@JoinColumn(name = "manufacturer_no", nullable=false, insertable=false, updatable=false)
+    private Set<Product> products;
+}
+mappedBy = indicates the foreign key column for this association is mapped by the associated attribute of otherside of the relationship.
+	
+try {
+		entityManagerFactory = EMFRegistry.getEntityManagerFactory();
+		entityManager = entityManagerFactory.createEntityManager();
+		entityTransaction = entityManager.getTransaction();
+		entityTransaction.begin();
+
+		Product product = Product
+						.of()
+						.productName("Mens Polo T-Shirt")
+						.description("Mens T-shirt")
+						.category("Fashion and Accessories")
+						.price(2300).build();
+
+		Manufacturer manufacturer = Manufacturer
+						.of()
+						.businessName("Uncle Thompsons Store")
+						.establishedDate(LocalDate.now().minusDays(786))
+						.contactNo("91-2938437498")
+						.emailAddress("noreply@thompsonstores.com")
+						.products(new HashSet<>(Arrays.asList(product))).build();
+		product.setManufacturer(manufacturer);
+
+		entityManager.persist(manufacturer);
+		entityManager.persist(product);
+
+		flag = true;
+}finally {
+		if(entityTransaction != null) {
+				if(flag) {
+						entityTransaction.commit();
+				}else {
+						entityTransaction.rollback();
+				}
+				entityManager.close();
+		}
+		EMFRegistry.closeEntityManagerFactory();
+}
+
+With the above mapping, by default foreign key column is created as "nullable". So when we are persisting both manufacturer and product entity objects with their association, the foreign key column will be persisted twice as below.
+	
+Hibernate: insert into manufacturer (business_nm,contact_no,email_address,established_dt) values (?,?,?,?)
+Hibernate: insert into product (category,description,manufacturer_no,price,product_nm) values (?,?,?,?,?)
+Hibernate: update product set manufacturer_no=? where product_no=?	 (#un-necessary)
+
+
+In the above, while persisting the product, the associate entity object manufacturer manufacturer_no (pk) has been persisted into product table foreign key.
+In addition there is an third operation performed by the hibernate in updating the foreign key key column for each product in the product table representing the Set<Product> products in the manufacturer
+
+So hibernate is trying to persist both the sides of association, that results in duplicate operation and impacts the performance of the application
+
+
+by using mappedBy we are specifying the owner of the relationship columns is mapped by the otherside (other entity) associated object, dont update the foreign key column based on this associated objects
+
+@OneToMany(mappedBy="manufacturer")
+private Set<Product> products;
+
+while persisting the manufacturer entity object, ignore Set<Product> products associated objects to be persisted, because the foreign key column representing this association is already taken care aspart of Product entity, manufacturer associated object
+
+This mappedBy in jpa is called "inverse" in hibernate
+-------------------------------------------------------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

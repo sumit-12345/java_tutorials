@@ -1,0 +1,449 @@
+Types of databases:
+There are 5 types of databases are there
+1. Hierarchial database
+2. Network database
+3. Relational database
+4. No-Sql database
+5. Object storage database
+
+
+1. Hierarchial database
+Hierarchial databases represents the data in Tree or Hierarchial model, the data is represented as record which is also known as Node. Each Node has 2 parts
+1. data = In the data part any arbitary data can be stored
+2. address = In the address part the address of the related nodes are stored
+
+Since it is an hierarchial relationship, the data is represented interms of parent and child relationship where in each node has only one parent but can have any number of children.
+	
+There will be only one Node at the top of the Tree called "Root" Node. Any data within the Tree/database should be accessed by traversing from the ROOT node only.
+	
+Note: these databases are intial generation of dbms, and no more exists in the market.
+	
+dis-advantages:-
+	1. huge amount of memory is wasted as each node holds the addresses of other nodes inorder to represent relationship between the nodes. 
+	2. identifying the data is very complex since we need to traverse across all the nodes of the tree from the root and is going to take lot of time
+	3. these fail in modelling real-world business data relationship, because always the business data has NxN relationship rather than only parent-child.
+	
+2. Network databases
+The Network databases are no way different from Hierarchial databases, the only point of difference is these databases allows a Node/Record to be in Relationship with any other Record/Node in the database, which is a kind of Graph database unlike Hierarchial.
+	
+The goal of network databases is to lift-up the drawback of Hierarchial database, so that it can model real-world relationships. 
+
+dis-advantages:-
+	1. Still each node holds several address, than the amount of data for representing relationship, thus results in huge amount of memory wastage
+	2. traversing and accessing the data is very complex
+	3. to delete an node, we need to find the references of all the nodes to which this node is associated with and remove them, unless otherwise we cannot delete a node, thus making it more complex to perform data manipulation operations
+	
+From the above more or less Network databases also has their own complexities and quickly ran out of market.
+--------------------------------------------------------------------------------------------------------------------------------
+3. RDBMS (Relational database management system)
+RDBMS databases allows us to store or represent data interms of Tables. Per each entity representing it we need to create a table to hold the data. Each table should be created with fixed number of columns defined with Length and DataType.
+The data is stored within these tables interms of Tupples which are also called as "Records".		
+		
+Every record in the table has all the fields of the data 
+(or)
+Every record in the table holds the same set of fields/colums 
+and hence it is called "Structured" database management system also.
+		
+How to query/access the data from RDBMS Tables?
+one dont need to traverse or know the address of the record inorder to access in RDBMS. Because RDBMS knows what data has been stored of which fields in each table, so we can ask the database itself to look through the data we have requested and return it.
+		
+How to ask the database to retrieve the data?
+SQL [Structured Query Language]	is introduced. Based on the structure of the data being stored, you access the data from the table, so it is called "SQL" language.
+		
+What is an primary key?
+Primary key acts as an logical address of a record within a table, which always carries unique value among the records of data that exists within the table. By using the primary key we can establish have the data of that table be in-relationship with data of another table. Without a no other tables can have relationship with the data of our table.
+		
+What is a foregin key?
+Foregin key is a special type of column within in a table, which always refers to the primary key column of the another table. within the foregin key column we can store the key column values of the other table which it referring. By writing the primary key column value of another table in foreign key column we establish relationship between the data across the tables.
+		
+How to establish relationship between the data across the tables in relational database management system?
+By writing primary key column value inside the foreign key column of another table, we represent or establish relationship.
+-----------------------------------------------------------------------------------------------------------------------------	
+4. No-Sql / Semi-Structured Databases		
+The RDBMS databases allows us to store the data interms of Tables, defined with fixed-set of columns. They always assumes all the records has all the columns of data, but in realty most of the modernized applications like:
+1. ecommerce
+2. social networking
+3. scientific 
+etc
+
+doesnt have the data being structured. different records of data has different fields/columns of data.
+
+For eg.. an e-commerce platform is trying to represent information about the products and store them aspart of the RDBMS database. Not all the products as same fields of data, so to accomodate data for various different types of products, we need to endup in defining huge number of columns for the table.
+
+since every product may not have all the columns of values, while persisting we need to store NULL values within most of the columns thus resulting in huge amount of storage memory.
+
+one-way to overcome the problem in storing such semi-structured data in RDBMS databases is use columnar table technic.
+
+Columnar Table Technic
+1. identify fields/columns of data that seems to be common across all the records and create one table with primary key defined.
+2. For those columns that seems to be differring across the records, create one more table (key/value pair table). Here the column name is stored as KEY and data of the column is stored as value
+
+For eg.. when we are storing mobile information in mobile table we create a base table called "mobile" that has common columns defined with primary key
+
+[mobile]
+mobile_no(pk)   model_no   model_nm   manufacturer  price     ram
+m1              SM001      Galaxy S23 Samsung       135000
+m2              IP002      IPhone 15  Apple         150000
+m3              N012       Nokia 1100 Nokia           4000
+	
+
+create an columnar table (also called as key/value pair table) for holding additional data:
+here the columns of data is represented as records
+
+[mobile_spec]
+mobile_no(fk) feature_nm        feature_value
+m1            operating system  andriod
+m1            ram               512 mb
+m1            processor         snapdragon 12
+m2            operating system  ios
+m2            processor         A16
+
+as the columns of data is expressed as records in this table, fetching and joining the data is very complex.
+for eg..
+give me the information about all the mobiles who has RAM capacity more than or equal to 512mb and operating system is "andriod": this requires joining the data across the tables which results in complexity and performance problems
+
+From the above we can understand RDBMS databases are not suitable for storing semi-structured data, they are only meant for storing structured-data only.
+To handle semi-structured data and perform persistency operations on them NO-SQL databases are introduced.
+	
+	
+RDBMS = There are lot of RDBMS Databases are manufactured/produced by various vendors in the market
+1. oracle
+2. mysql
+3. postgres
+4. db2
+5. ms-sql server
+6. sybase
+all these database management systems store the data interms of Tables with relationships expressed interms of primary key and foreign key only.
+Because RDBMS databases are designed based on standard principles and it is governed by SQL92 standard.
+	
+	
+	
+No-Sql database management systems are designed to store semi-structured data and allows us to perform operations on the data. Here semi-structured means not all the records/entities has same/fixed set of fields/columns.
+	
+Then how does these no-sql databases stores the data, in which datastructure do they store the data?
+Un-fortunately there is no single-standard unlike RDBMS, different database vendors comes up with different datastructures in holding and processing the data. There are lot of semi-structured databases are available as below
+1. mongodb
+2. cassendra
+3. couchdb
+4. cockroach db
+5. dynamodb
+etc
+
+For eg..
+1. mongodb = stores the data interms of collections where each collection has a record of data represented in json format.
+	
+collection (table)
+1 records = json object
+
+mobile (collection)
+{"mobileno": "m1", "model_no", "A001", "model_nm": "iphone15", "manufacturer": "apple", "price": 150000, "operating_system": "ios", "processor": "A12"}
+{"mobileno": "m2", "model_no", "SM001", "model_nm": "galaxy S23", "manufacturer", "samsung", "price": 13500, "operating_system": "andriod", "ram": "512mb", "processor": "snapdragon"}
+
+
+2. cassendra
+columnar database tables
+in cassendra the data is stored interms of tables, where each record holds arbitary set of key/value pairs of data.
+	
+(visualized as one table with records containing columns(key/value))	
+mobile (table)
+mobileno=m1 model_no=a0001 model_nm=iphone15 
+
+(internal datastructure of storing the data)
+mobile
+mobile_no   key_nm       value
+m1          model_no       a0001
+m1          model_nm       iphone15
+m1          manufacturer   apple
+	
+give me the data from mobile table where mobile_no=m1
+The above query returns one record, transposing the physical records of data into 1 record with columns as below:
+model_no=a001  model_nm=iphone15  manufacturer=apple
+
+From the above it looks like No-Sql databases are capable enough in not only storing semi-structured data, they can also be used for handling	structured data as well.
+	
+Then Why not always no-sql, why RDBMS for structured data?
+	(or)
+When to use RBDMS and when No-Sql database?
+	
+RDBMS databases are good at:
+1. representing relationship between the data through primary keys and foreign keys
+2. RDBMS database has schema defined interms of Tables, with dataType and size, so all the data that is stored is of Type-Safe and validated
+3. data consistency can be achieved by enforcing constraints (Length, Unique, Check, Not Null etc)
+4. OLTP database, that supports Transactionality which is required for business applications for achieving consistency.
+5. Biggest advantage of RDBMS databases are SQL, that offers flexibility in querying and accessing the data. It supports complex data retrieval by applying functions/clauses like groupBy, avg etc and can join the data across the tables 
+	
+No-Sql Databases:
+1. not suitable for representing relational data as there is not referrential keys supported by them
+2. there is no fixed schema defined, each record of data has its own face of it, so there is no way to validate
+3. we cannot enforce constraints on the data, as the data is never being fixed
+4. These databases doesnt support Transactionality.
+5. They dont offer flexibility query capabilities on the data like RDBMS. There is no SQL language offered by these databases
+
+
+5. Object storage databases
+Not all the data is of text in nature, many of the times applications recieves the data in binary/object format as well like images, audio, video, documents/files etc. The applications has to persist or store all of this data as well for future processing.
+	
+For eg..
+In a bike rental portal, the user will register himself by uploading an picture of him along with drivers licenses document inorder to hire/rent a bike. The system/application should be able to collect your images/documents and persist them for future reference.
+	
+How does such objects of data is stored/persisted?
+1. FileSystem 
+The servers/application upon receiving these data, can persist them on the Filesystem of the computer as those are simple files. (Images, videos, audios, documents are ultimately Files). But the problem is the data that is stored on the Filesystem is not distributed. which means these files are not accessible over the cluster of machines and will be local to the computer one which those are stored.
+	
+	
+2. RDBMS database
+The RBDMS databases supports storing objects of data within the tables by using BLOB and CLOB columns
+BLOB = binary large object
+CLOB = character large objects
+so that these columns of data can be queried and accessed from anywhere (network).
+	
+Till now there is no alternate and the only way to manage these objects of data is RBMS only. But there are lot of 
+dis-advantages of storing objects of data in RDBMS as below.
+1. RDBMS databases are resource intensive systems, which means they need high cpu and memory resources for running on a computer. Because they not only perform CRUD operations, these databases performs data processing like
+1. joining the data across the tables
+2. sorting
+3. filtering
+4. aggregate operations like: sum, avg, count 
+5. groupBy
+etc
+
+which requires huge cpu and memory to carryout these operations.
+
+on such systems if we are storing objects of data like audio, videos, documents/images, then these systems quickly runs out of memory, and we endup in spending huge cost in storing objects onthese expensive systems.
+
+To overcome this problem in managing/storing objects of data, the object-storage databases are introduced.
+
+Object Storage database
+There are various different vendors manufactured and provided different Object storage databases as below:
+1. AWS S3 Storage 
+2. GCP Cloud Storage
+3. Azure Blob Storage
+etc
+
+
+In these databases we can store objects of data and can access them over the network. For each object we store within these databases, it generates an unique id, that acts as an identifier in locating and access the objects back.
+
+From the above discussions of RDBMS, NO-SQL and Object Storage databases, we can understand aspart of an application we might be using any of these databases on persisting the data based on the requirement.
+If our application has all the three forms of the data, then we endup in using all the 3 types of databases.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+

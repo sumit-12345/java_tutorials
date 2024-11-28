@@ -1,0 +1,100 @@
+Fetch options in Jpa
+--------------------
+In JPA, the fetch option determines or tells how the related child or associated entity objects are loaded from the database tables. We can control the fetching strategy of these child/associated objects using fetch options.
+
+@Entity
+@Table(name = "product")
+class Product {
+	@Id
+	@Column(name = "product_no")
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private int productNo;
+	@Column(name = "product_nm")
+	private String productName;
+	private String description;
+	private String category;
+	private double price;
+	@ManyToOne
+	@JoinColumn(name = "manufacturer_no", nullable = false)
+	private Manufacturer manufacturer;
+}
+
+@Entity
+@Table(name = "manufacturer")
+class Manufacturer {
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@Column(name = "manufacturer_no")
+	private int manufacturerNo;
+	@Column(name = "business_nm")
+	private String businessName;
+	@Column(name = "established_dt")
+	private LocalDate establishedDate;
+	@Column(name = "contact_no")
+	private String contactNo;
+	@Column(name = "email_address")
+	private String emailAddress;
+	@OneToMany(mappedBy = "manufacturer")
+	private Set<Product> products;	
+
+}
+
+Let us fetch the Manufacturer entity object from the database table
+
+Manufacturer manufacturer = entityManager.find(Manufacturer.class, 10);
+
+when we asked jpa or hibernate to fetch the Manufacturer entity object with id: 10 from database table, it not only fetches the manufacturer object, along with that its associated Set<Product> products also will be queries and fetched from the database and populates into the entity object
+
+How does it fetches the child associated entity objects (products)?
+Based on the fetch strategy we choose the associated entity objects are fetched.
+There are #2 fetch strategies are supported by jpa
+1. FetchType.LAZY
+This is the default fetch strategy for collection type associations (*toMany). With FetchType as LAZY, the child associated objects are not queries along with parent.
+	
+in the above it queries only manufacturer table, fetch the record and populate into Manufacturer class attributes ignoring the collection (Set<Product> products).
+	
+only when we tried accessing the products associate objects by calling the getter method, then only the child associated objects will be queries and fetched from the database (using another query).	
+	
+2. FetchType.EAGER
+This is the default fetch strategy for *ToOne relationships (non-collection associations). With eager as fetch option, the child entities are queries along with parent using join query.
+	
+In the above the when we query the Manufacturer, the products are not loaded, unless we explicity using getter method. But if we wish to have products also being fetched along with Manufacturer itself we can use FetchType.EAGER on the association as shown below.
+	
+@OneToMany(mappedBy="manufacturer", fetch=FetchType.EAGER)
+private Set<Product> products;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

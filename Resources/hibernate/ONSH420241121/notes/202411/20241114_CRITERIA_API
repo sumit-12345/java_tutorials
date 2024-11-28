@@ -1,0 +1,198 @@
+Criteria api
+-------------
+To query and access the data from the database in hibernate/jpa api, we need to write hql/jpql queries. Instead of we writing hql/jpql queries, we can construct them using the criteria api class to query the data from the database using jpa or hibernate.
+	
+In-Short: We build hql/jpql queries through java code by using Criteria api
+
+There are lot of advantages of using criteria api:
+1. Type-safe query language
+The queries we write using hql/jpql are not type-safe queries. while referring the entity classes or their attributes always there is a chance where we might refer them wrong which leads to an runtime exception in terminating the application as below.
+
+
+TypedQuery<Product> q = entityManager.createQuery("from Porduct p where p.prise between :minPrice and :maxPrice", Product.class);
+List<Product> products = q.getResultList();
+// iterate and use the data
+
+since the queries are expressed or written as string, even though we refer wrong entity class or its attributes still the code gets compiled. but during the execution at runtime we run into exception terminating the application
+
+
+whereas when we use Criteria api in building these queries rather than expressing the queries as string, we construct them using the api classes and refer the Type of the entity class (for eg.. Product.class) in querying the data. So any typo-errors or incorrect reference are being caught during the compilation itself and makes the queries Type-Safe
+
+
+2. no-sql knowledge
+The programmer dont need to know the sql query language in writing the queries for querying the data from database. We can construct the queries using the Criteria api classes in querying the data from database
+
+3. Criteria queries are self readable and easily understandable to anyone, where as sql queries requires knowledge of sql to interpret or understand
+
+4. optimized sql queries
+Upon writing and executing the Criteria api code in querying the data, the underlying hibernate or jpa implementation engine has to generate an native sql query based on the Criteria logic we wrote in querying the data from database. These jpa engines ensures to generate an optimal queries that lowers the cost of execution on the underlying database
+
+5. search queries can be built easily using criteria api
+
+
+From hibernate 5.x onwards the hibernate criteria api has been deprecated and removed in-favor of jpa 2.1 api.
+In jpa 2.x it has introduced Criteria api to support building Type-safe criteria queries, they even introduced Metamodel based criteria api. Using Metamodel api we can build completely the Type-safe criteria queries. So in-favor of jpa criteria api, the hibernate has removed hibernate criteria api
+
+
+While constructing an sql query we need to build #3 parts in it
+
+select * from product where product_nm like ?
+	     |    |            |
+	     | from(part)  criteria
+   projection
+	 
+1. from clause = indicates from which table we want to query the data from
+2. criteria clause = based on what filter conditions we want to fetch the data
+3. projection clause = refers to what data we want to select from the tables
+
+So we can build all the #3 parts of the query, but the simplest one to query is just from clause
+
+from Product
+
+How to construct the simplest form of the query?
+A criteria query is represented by CriteriaQuery object, into this object we build all the three clauses (from, criteria and projection) in querying the data
+
+The jpa api has been provided CriteriaBuilder using which we need to create the object of CriteriaQuery. Using the EntityManager we need to create object of CriteriaBuilder
+
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu");
+EntityManager em = emf.createEntityManager();
+
+CriteriaBuilder cb = em.getCriteriaBuilder();
+
+CriteriaQuery<Product> cq = cb.createQuery(Product.class);
+Here we just created the object of CriteriaQuery with generic type as Product.class which means upon executing the query what will be output being generated out of it. But we havent build the #3 clauses aspart of the query yet
+
+Now let us add the Clauses to the query.
+	
+Root<Product> root = cq.from(Product.class);	
+
+The root indicates the root of the table, through which we can choose what columns of data we want to fetch from each record of the table.
+
+incase if we want to select all the columns like "*" then we need to select the entire root as below
+
+cq.select(root); // we are selecting all the columns from the table
+
+once we constructed the CriteriaQuery object with all the clauses we need to build TypedQuery from it as below
+
+TypedQuery<Product> tq = em.createQuery(cq);
+List<Product> products = tq.getResultList();
+-------------------------------------------------------------------------------------------------------------------------------------
+
+Predicates are used for building conditional expressions aspart of the where clause of the query. 
+Predicate is an interface and there different implementations of the Predicate are available
+	1. GreaterThan
+	2. GreaterThanEqualTo
+	3. Like
+	4. EqualTo
+
+The CriteriaBuilder acts as an builder in creating the Predicate implementation objects so that these predicates can be added aspart of the where clause of the CriteriaQuery
+
+query: select all the products from product table where price greaterThan ?
+	
+EntityManagerFactory emf = Persistence.createEntityManagerFactory("pu");
+EntityManager em = emf.createEntityManager();
+
+CriteriaBuilder cb = em.getCriteriaBuilder();
+CriteriaQuery<Product> cq = cb.createQuery(Product.class);	
+
+Root<Product> root = cq.from(Product.class);
+cq.select(root);
+
+cq.where(cb.greaterThan(root.get("price"), 1000));
+TypedQuery<Product> tq = em.createQuery(cq);
+// execute
+
+
+query: no of products by category (groupBy)
+sql: select count(p), p.category from Product p group by p.category;
+
+CriteriaQuery<Tuple> cq = cb.createQuery(Tuple.class);
+Root<Product> root = cq.from(Product.class);
+Root = represents the main entity from which we are querying 
+
+
+cq.multiselect(cb.count(root.get("productNo")), root.get("category"));
+cq.groupBy(root.get("category"));
+
+TypedQuery<Tuple> tq = em.createQuery(cq);
+List<Tuple> nproductsByCategory = tq.getResultList();
+------------------------------------------------------------------------------------------------------------------------------------
+Criteria Joins
+
+query: select all productName and their manufacturerName who is established before given date
+sql: select p.productName, p.manufacturer.manufacturerName from Product p where p.manufacturer.establishedDate < :estDate
+
+criteria api:
+
+cq = cb.createQuery(Tuple.class); // empty
+
+Root<Product> root = cq.from(Product.class);
+Join<Product, Manufacturer> join = root.join("manufacturer");
+
+cq.multiselect(root.get("productName"), join.get("businessName"));
+cq.where(cb.lessThan(join.get("establishedDate"), establishedDate));
+
+
+typedQuery = entityManager.createQuery(cq);
+
+
+
+query: show all the manufacturers manufacturing the products of category: electronics
+sql: select m from Manufacturer m inner join on m.products p where p.category like ?
+	
+	
+CriteriaQuery<Manufacturer> cq = cb.createQuery(Manufacturer.class);
+Root<Manufacturer> root = cq.from(Manufacturer.class);
+Join<Manufacturer, Product> join = root.join("products");
+cq.select(root);
+cq.where(cb.like(join.get("category"), category));
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

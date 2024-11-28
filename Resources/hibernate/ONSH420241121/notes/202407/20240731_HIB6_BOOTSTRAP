@@ -1,0 +1,17 @@
+Hibernate 3.x bootstrapping (6.3)
+For more advanced bootstrapping in Hibernate 4.x/5.x/6.x: org.hibernate.boot (api classes) (99.9% not needed) = 3-5 days
+	
+jpa api only 
+SessionFactory
+	(default connection pool implementation): not recommended for production usage.
+1. c3p0
+2. dbcp
+3. proxool
+4. hikari
+etc
+hibernate framework = supports integration with third-party connection pool libraries
+
+
+dbpool (third-party connection pool library)
+
+Service + ServiceRegistry

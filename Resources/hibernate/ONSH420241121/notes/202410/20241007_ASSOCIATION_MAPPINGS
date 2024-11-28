@@ -1,0 +1,123 @@
+Association mappings
+--------------------
+Always the real-world data has relationship between them, while storing this data into the table model we should be able to persist the data with their relationship, so that we can support performing business operations based on the relationship
+
+Types of relationships in the database model:
+1. one-to-one 
+	1.1 direct one-to-one
+	If the child table doesnt have an independent existence and identity from the parent we represent direct one-to-one relationship
+	pk of the parent is written as pk and fk in the child table
+		
+	1.2 one-to-many as one-to-one
+	each of the entities has independent existence and individual identities. then we can represent one-to-one relationship by using one-to-many as one-to-one
+	pk of one table is written as fk in another table and make the foreign key unique
+	
+2. one-to-many / many-to-one
+	one record in my table is in relationship with multiple records of the other table
+	write pk of one table as fk in another table. 
+	
+3. many-to-many
+	many records in one table are in relationship with many records of another table
+	we need a third-table which is also called as "relationship table". In this table both the tables pk's are written as composite pk 's fk's in the third-table.
+
+
+How many ways we can represent relationship between the classes?
+There are #2 ways we can represent relationship between the classes
+1. Inheritance 
+Inheritance mapping model is about mapping inheritance relationship between the entity classes into the underlying table model.
+	
+2. Association
+A class is declared as an attribute inside another class to establish assocation relationship between them. There are 3 forms of association relationship are there
+1. association
+2. aggregation
+3. composition
+
+based on #3 characteristics we can derive an association relationship is in which form
+
+1. directionality
+	1. uni-directional = only oneside of the association is represented 
+	2. bi-directional  = both the classes holds each of the others as attributes
+	
+2. cardinality
+Cardinality of the relationship indicates how many instances of my class is in-relationship with how many instances of the other class
+	1. 1..1
+	2. 1..*
+	3. *..*
+
+3. ownership
+Who owns the relationship
+
+How do we map the association relationship between the classes into the table relationship?
+We need to map the association relationship between the classes into the table model based on cardinality and directionality of the association
+
+
+@Entity
+@Table(name="product")
+class Product {
+	@Id
+	@Column(name="product_no")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	int productNo;
+	@Column(name="product_nm")
+	String productName;
+	String description;
+	String category;
+	double price;
+	
+	// accessors
+}	
+
+@Entity
+@Table(name="manufacturer")
+class Manufacturer {
+	@Id
+	@Column(name="manufacturer_no")
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	int manufacturerNo;
+	@Column(name="business_nm")
+	String businessName;
+	@Column(name="est_dt")
+	LocalDate establishedDate;
+	String headquatres;
+	@Column(name="contact_no")
+	String contactNo;
+	@Column(name="email_address")
+	String emailAddress;
+	
+	@OneToMany
+	@JoinColumn(name="manufacturer_id")
+	Set<Product> products; 
+	
+	// accessors
+}
+
+1. How did we mapped the association? (Where is the foreign key column)
+2. What is the foreign key column
+
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,86 @@
+dynamic insert and dynamic update
+
+#1. dynamic update
+
+The hibernate or jpa for sake of performance optimization during the time of bootstrapping the application itself, it reads the mapping information and generates the sql queries for insert, update, delete and select by id for all the entity classes using dialect and caches them aspart of the SessionFactory.
+	
+so always when we perform any update(..)/merge(..) on an entity object, hibernate/jpa by default updates all the columns/attributes of data by sustituting the values into the above pre-generated sql queries. It never cares about which attributes are modified to be reflected into the database table.
+	
+but in few cases we dont want to update all the columns of data unless there is a change for audit purpose.  To ensure only the modified attributes of data are being updated, we need to enable dynamic-update for the entity class
+	
+<class name="Product" table="product" dynamic-update="true">
+	<id name="productNo" column="product_no">
+		<generator class="identity"/>
+	</id>
+</class>
+
+by the moment when we enable dynamic-update="true", the hibernate will not construct the update sql query for that entity class during the bootstrapping of the application, because the query should be constructed dynamic based on the modified attributes/columns of data of that entity class being updated.
+	
+so when we call update(..) operation for an entity class, hibernate internally queries the record of data with the pk of the object being udpated and compares with the entity object to see what columns are modified, based on that it constructs the sql query dynamically with only those columns and updates the record in the database table.
+	
+Note: This incurrs a huge amount of performance in carrying the operation. So this should be used only when necessary and by default dynamic-update="false"
+	
+#2. dynamic insert
+as the queries are pre-generated as discussed above, even though few columns within the table are marked as NULL and we didnt supplied the values by populating into the entity object during persist operation, still hibernate passes the NULL values for these columns while performing insert operation.
+
+customer [customer_no (pk), first_nm not null, last_nm not null, middle_nm nullable, age not null, gender nullable
+          mobile_no nullable, email_address not null]
+
+insert into customer(customer_no, first_nm, last_nm, age, email_address) values('1', "fn", 'ln',  29, 'fn@gmail.com');
+	
+	
+Customer customer = new Customer();
+customer.setFirstName("fn");
+customer.setLastName("ln");
+customer.setAge(39);
+customer.setEmailAddress("fn@gmail.com");
+
+session.persist(customer);
+
+To avoid supplying NULL values and leave them to the database defaults, we need to enable dynamic-insert="true" for the entity class. So that hibernate will construct the insert sql query dynamically during the time of performing insert operation by only including the columns that has been populated with data into their corresponding attributes of the entity class leaving the rest to database defaults.
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
