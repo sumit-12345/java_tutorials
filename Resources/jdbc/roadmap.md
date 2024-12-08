@@ -4,7 +4,7 @@ Here's a **Java JDBC (Java Database Connectivity) roadmap** to guide you from th
    - **What is JDBC?**  
      Understand what JDBC is and how it allows Java applications to connect to databases.
      - JDBC API
-     - Driver types in JDBC ( 1, 2, 3, 4)
+     - Driver types in JDBC (1, 2, 3, 4)
    
    - **JDBC Architecture:**
      - Client, Driver Manager, Driver, and Database Server
